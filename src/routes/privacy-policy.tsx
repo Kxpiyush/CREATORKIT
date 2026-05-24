@@ -54,7 +54,7 @@ function PrivacyPolicy() {
         },
         {
           title: "Analytics",
-          body: "Creator Kit uses Google Analytics 4 to understand traffic, popular pages, device types, and performance issues. Analytics helps improve the website and does not upload, inspect, or receive your selected media files.",
+          body: "Creator Kit uses Google Analytics 4 and Microsoft Clarity to understand traffic, popular pages, device types, interactions, and performance issues. Analytics helps improve the website and does not upload, inspect, or receive your selected media files.",
         },
         {
           title: "Google AdSense, ads, and cookies",
@@ -66,7 +66,7 @@ function PrivacyPolicy() {
         },
         {
           title: "Third-party services",
-          body: "The website may rely on hosting, security, analytics, advertising, and performance services. These third-party providers may process limited technical information needed to deliver their services. They do not receive your locally processed media files from Creator Kit.",
+          body: "The website may rely on hosting, security, analytics, advertising, and performance services, including services such as Google Analytics and Microsoft Clarity. These third-party providers may process limited technical information needed to deliver their services. They do not receive your locally processed media files from Creator Kit.",
         },
         {
           title: "Children's privacy",
