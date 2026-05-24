@@ -15,7 +15,7 @@ export const Route = createFileRoute("/resize-image")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
-    links: [{ rel: "canonical", href: `https://CreatorKitTools.com${seo.path}` }],
+    links: [{ rel: "canonical", href: `https://creatorkittools.com${seo.path}` }],
   }),
   component: RouteComponent,
 });

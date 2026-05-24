@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://CreatorKitTools.com/sitemap.xml
+Sitemap: https://creatorkittools.com/sitemap.xml

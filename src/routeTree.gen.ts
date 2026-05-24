@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideoToMp3RouteImport } from './routes/video-to-mp3'
 import { Route as VideoToGifRouteImport } from './routes/video-to-gif'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResizeImageRouteImport } from './routes/resize-image'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PngToJpgRouteImport } from './routes/png-to-jpg'
@@ -39,11 +38,6 @@ const VideoToGifRoute = VideoToGifRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResizeImageRoute = ResizeImageRouteImport.update({
@@ -120,7 +114,6 @@ export interface FileRoutesByFullPath {
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/video-to-gif': typeof VideoToGifRoute
   '/video-to-mp3': typeof VideoToMp3Route
@@ -138,7 +131,6 @@ export interface FileRoutesByTo {
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/video-to-gif': typeof VideoToGifRoute
   '/video-to-mp3': typeof VideoToMp3Route
@@ -157,7 +149,6 @@ export interface FileRoutesById {
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/video-to-gif': typeof VideoToGifRoute
   '/video-to-mp3': typeof VideoToMp3Route
@@ -177,7 +168,6 @@ export interface FileRouteTypes {
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
-    | '/sitemap.xml'
     | '/terms'
     | '/video-to-gif'
     | '/video-to-mp3'
@@ -195,7 +185,6 @@ export interface FileRouteTypes {
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
-    | '/sitemap.xml'
     | '/terms'
     | '/video-to-gif'
     | '/video-to-mp3'
@@ -213,7 +202,6 @@ export interface FileRouteTypes {
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
-    | '/sitemap.xml'
     | '/terms'
     | '/video-to-gif'
     | '/video-to-mp3'
@@ -232,7 +220,6 @@ export interface RootRouteChildren {
   PngToJpgRoute: typeof PngToJpgRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResizeImageRoute: typeof ResizeImageRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   VideoToGifRoute: typeof VideoToGifRoute
   VideoToMp3Route: typeof VideoToMp3Route
@@ -259,13 +246,6 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resize-image': {
@@ -368,7 +348,6 @@ const rootRouteChildren: RootRouteChildren = {
   PngToJpgRoute: PngToJpgRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResizeImageRoute: ResizeImageRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   VideoToGifRoute: VideoToGifRoute,
   VideoToMp3Route: VideoToMp3Route,

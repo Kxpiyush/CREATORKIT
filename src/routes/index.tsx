@@ -18,10 +18,10 @@ export const Route = createFileRoute("/")({
         content: "Compress, convert, resize, crop, and trim files privately in your browser with no uploads.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://CreatorKitTools.com/" },
+      { property: "og:url", content: "https://creatorkittools.com/" },
       { name: "twitter:card", content: "summary" },
     ],
-    links: [{ rel: "canonical", href: "https://CreatorKitTools.com/" }],
+    links: [{ rel: "canonical", href: "https://creatorkittools.com/" }],
   }),
   component: Index,
 });

@@ -1,1 +1,1 @@
-export const SITE_URL = "https://CreatorKitTools.com";
+export const SITE_URL = "https://creatorkittools.com";
