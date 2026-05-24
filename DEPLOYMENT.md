@@ -2,26 +2,20 @@
 
 This app is frontend-only. There is no backend, no database, no job queue, no server-side upload, and no cloud file storage.
 
-## Hosting
+## Vercel Hosting
 
-Use any static frontend host:
+This project is configured for Vercel using Nitro's Vercel preset.
 
-- Vercel
-- Netlify
-- Cloudflare Pages
+Vercel dashboard settings:
 
-Build command:
+- Framework preset: Other
+- Install command: `npm install`
+- Build command: `npm run build`
+- Output directory: leave empty/default
 
-```bash
-npm install
-npm run build
-```
+The build creates Vercel Build Output in `.vercel/output`.
 
-Deploy output:
-
-```text
-dist
-```
+The app shell may be served by Vercel Functions because this is a TanStack Start app, but media processing still happens only in the user's browser. Files are never uploaded for processing.
 
 ## Privacy Model
 
