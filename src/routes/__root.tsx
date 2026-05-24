@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { SiteFooter } from "@/components/site/Footer";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -75,6 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "All-in-One Creator Toolkit" },
       { name: "description", content: "Free image, video, and audio tools that run fully in your browser. No uploads, no login, no backend processing." },
+      { name: "robots", content: "index,follow" },
       { name: "author", content: "Creator Kit" },
       { property: "og:title", content: "All-in-One Creator Toolkit" },
       { property: "og:description", content: "Browser-only media tools for creators: convert, compress, trim, resize, and download without uploading files." },
@@ -121,6 +123,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <SiteFooter />
       <Toaster theme="dark" position="bottom-right" />
     </QueryClientProvider>
   );

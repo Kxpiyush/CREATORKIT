@@ -11,13 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideoToMp3RouteImport } from './routes/video-to-mp3'
 import { Route as VideoToGifRouteImport } from './routes/video-to-gif'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResizeImageRouteImport } from './routes/resize-image'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PngToJpgRouteImport } from './routes/png-to-jpg'
 import { Route as Mp3CutterRouteImport } from './routes/mp3-cutter'
 import { Route as JpgToPngRouteImport } from './routes/jpg-to-png'
 import { Route as ImageCompressorRouteImport } from './routes/image-compressor'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as CropImageRouteImport } from './routes/crop-image'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as ToolIdRouteImport } from './routes/$toolId'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -31,6 +36,11 @@ const VideoToGifRoute = VideoToGifRouteImport.update({
   path: '/video-to-gif',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -39,6 +49,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ResizeImageRoute = ResizeImageRouteImport.update({
   id: '/resize-image',
   path: '/resize-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PngToJpgRoute = PngToJpgRouteImport.update({
@@ -61,9 +76,24 @@ const ImageCompressorRoute = ImageCompressorRouteImport.update({
   path: '/image-compressor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CropImageRoute = CropImageRouteImport.update({
   id: '/crop-image',
   path: '/crop-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolIdRoute = ToolIdRouteImport.update({
@@ -80,26 +110,36 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$toolId': typeof ToolIdRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
   '/png-to-jpg': typeof PngToJpgRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/video-to-gif': typeof VideoToGifRoute
   '/video-to-mp3': typeof VideoToMp3Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$toolId': typeof ToolIdRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
   '/png-to-jpg': typeof PngToJpgRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/video-to-gif': typeof VideoToGifRoute
   '/video-to-mp3': typeof VideoToMp3Route
 }
@@ -107,13 +147,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$toolId': typeof ToolIdRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
   '/png-to-jpg': typeof PngToJpgRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/video-to-gif': typeof VideoToGifRoute
   '/video-to-mp3': typeof VideoToMp3Route
 }
@@ -122,39 +167,54 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$toolId'
+    | '/about'
+    | '/contact'
     | '/crop-image'
+    | '/disclaimer'
     | '/image-compressor'
     | '/jpg-to-png'
     | '/mp3-cutter'
     | '/png-to-jpg'
+    | '/privacy-policy'
     | '/resize-image'
     | '/sitemap.xml'
+    | '/terms'
     | '/video-to-gif'
     | '/video-to-mp3'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$toolId'
+    | '/about'
+    | '/contact'
     | '/crop-image'
+    | '/disclaimer'
     | '/image-compressor'
     | '/jpg-to-png'
     | '/mp3-cutter'
     | '/png-to-jpg'
+    | '/privacy-policy'
     | '/resize-image'
     | '/sitemap.xml'
+    | '/terms'
     | '/video-to-gif'
     | '/video-to-mp3'
   id:
     | '__root__'
     | '/'
     | '/$toolId'
+    | '/about'
+    | '/contact'
     | '/crop-image'
+    | '/disclaimer'
     | '/image-compressor'
     | '/jpg-to-png'
     | '/mp3-cutter'
     | '/png-to-jpg'
+    | '/privacy-policy'
     | '/resize-image'
     | '/sitemap.xml'
+    | '/terms'
     | '/video-to-gif'
     | '/video-to-mp3'
   fileRoutesById: FileRoutesById
@@ -162,13 +222,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ToolIdRoute: typeof ToolIdRoute
+  AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
   CropImageRoute: typeof CropImageRoute
+  DisclaimerRoute: typeof DisclaimerRoute
   ImageCompressorRoute: typeof ImageCompressorRoute
   JpgToPngRoute: typeof JpgToPngRoute
   Mp3CutterRoute: typeof Mp3CutterRoute
   PngToJpgRoute: typeof PngToJpgRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResizeImageRoute: typeof ResizeImageRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   VideoToGifRoute: typeof VideoToGifRoute
   VideoToMp3Route: typeof VideoToMp3Route
 }
@@ -189,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VideoToGifRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -201,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/resize-image'
       fullPath: '/resize-image'
       preLoaderRoute: typeof ResizeImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/png-to-jpg': {
@@ -231,11 +310,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImageCompressorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/crop-image': {
       id: '/crop-image'
       path: '/crop-image'
       fullPath: '/crop-image'
       preLoaderRoute: typeof CropImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$toolId': {
@@ -258,13 +358,18 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ToolIdRoute: ToolIdRoute,
+  AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
   CropImageRoute: CropImageRoute,
+  DisclaimerRoute: DisclaimerRoute,
   ImageCompressorRoute: ImageCompressorRoute,
   JpgToPngRoute: JpgToPngRoute,
   Mp3CutterRoute: Mp3CutterRoute,
   PngToJpgRoute: PngToJpgRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResizeImageRoute: ResizeImageRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   VideoToGifRoute: VideoToGifRoute,
   VideoToMp3Route: VideoToMp3Route,
 }

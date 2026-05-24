@@ -1,16 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientToolPage } from "@/components/toolkit/ClientToolPage";
+import { getToolSeo } from "@/lib/client-tools";
+
+const seo = getToolSeo("mp3-cutter");
 
 export const Route = createFileRoute("/mp3-cutter")({
   head: () => ({
     meta: [
-      { title: "MP3 Cutter - Free Browser Audio Trimmer" },
-      {
-        name: "description",
-        content:
-          "Cut MP3 files directly in your browser. Your audio never leaves your device.",
-      },
+      { title: seo.title },
+      { name: "description", content: seo.description },
+      { name: "robots", content: "index,follow" },
+      { property: "og:title", content: seo.title },
+      { property: "og:description", content: seo.description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: `https://creatorkit.app${seo.path}` }],
   }),
   component: RouteComponent,
 });

@@ -5,13 +5,23 @@ import { TOOL_DEFINITIONS, type ClientToolId, getTool, getToolPath } from "@/lib
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Creator Kit - Fast Free Browser Tools" },
+      { title: "Creator Kit - Free Browser-Based Image, Audio, and Video Tools" },
       {
         name: "description",
         content:
           "Fast image and audio tools that run in your browser. Compress, convert, resize, crop, and cut files without uploads.",
       },
+      { name: "robots", content: "index,follow" },
+      { property: "og:title", content: "Creator Kit - Free Browser-Based Media Tools" },
+      {
+        property: "og:description",
+        content: "Compress, convert, resize, crop, and trim files privately in your browser with no uploads.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://creatorkit.app/" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "https://creatorkit.app/" }],
   }),
   component: Index,
 });
@@ -58,7 +68,7 @@ function Index() {
               </p>
             </div>
             <div className="rounded-xl border border-brand/25 bg-brand-muted p-4 text-sm">
-              Privacy first: no server uploads, no accounts, no database.
+              Files are processed locally in your browser and never uploaded.
             </div>
           </div>
         </section>

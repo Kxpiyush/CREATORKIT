@@ -1,18 +1,38 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { ClientToolPage } from "@/components/toolkit/ClientToolPage";
-import { getTool, isClientToolId } from "@/lib/client-tools";
+import { getTool, getToolSeo, isClientToolId } from "@/lib/client-tools";
 
 export const Route = createFileRoute("/$toolId")({
-  head: () => ({
-    meta: [
-      { title: "Free Browser Tool - Creator Kit" },
-      {
-        name: "description",
-        content: "Use free media tools in your browser. Your files are processed locally and never uploaded.",
-      },
-    ],
-  }),
+  head: ({ params }) => {
+    if (!isClientToolId(params.toolId)) {
+      return {
+        meta: [
+          { title: "Tool Not Found - Creator Kit" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+
+    const seo = getToolSeo(params.toolId);
+    const url = `https://creatorkit.app${seo.path}`;
+
+    return {
+      meta: [
+        { title: seo.title },
+        { name: "description", content: seo.description },
+        { name: "robots", content: "index,follow" },
+        { property: "og:title", content: seo.title },
+        { property: "og:description", content: seo.description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary" },
+        { name: "twitter:title", content: seo.title },
+        { name: "twitter:description", content: seo.description },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: RouteComponent,
 });
 

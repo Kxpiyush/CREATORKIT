@@ -112,14 +112,15 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
                   : tool.description}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <TrustBadge icon="lock">Private by default</TrustBadge>
-                <TrustBadge icon="zap">Runs on your device</TrustBadge>
-                <TrustBadge icon="check">Free tools</TrustBadge>
+                <TrustBadge icon="lock">Files never uploaded</TrustBadge>
+                <TrustBadge icon="zap">Browser-based processing</TrustBadge>
+                <TrustBadge icon="check">Privacy first</TrustBadge>
+                <TrustBadge icon="lock">No server storage</TrustBadge>
               </div>
             </div>
             <div className="rounded-lg border border-brand/25 bg-brand-muted px-4 py-3 text-xs text-foreground max-w-md">
               <Lock className="size-3.5 inline mr-2 text-brand" />
-              Your files are processed in your browser and never uploaded.
+              Files are processed locally in your browser and never uploaded.
             </div>
           </div>
         </section>
@@ -214,9 +215,9 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
         </section>
 
         <section className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <InfoCard title="No server bills" text="Processing runs in each visitor's browser, so hosting stays close to static-site cost." />
-          <InfoCard title="Ad-ready layout" text="Leaderboard and sidebar spaces are prepared for AdSense or affiliate placements." />
-          <InfoCard title="SEO tool pages" text="Dedicated pages target high-intent searches like video to MP3 and image compressor." />
+          <InfoCard title="Features" text="Drag and drop files, process locally, preview results, and download directly from browser memory." />
+          <InfoCard title="Private by design" text="Files never upload to our servers, and this site does not require accounts or cloud storage." />
+          <InfoCard title="Fast lightweight pages" text="Image and Web Audio tools use native browser APIs where possible for quick processing." />
         </section>
 
         <FAQ toolTitle={tool.title} />
@@ -463,12 +464,20 @@ function FAQ({ toolTitle }: { toolTitle: string }) {
       <h2 className="text-xl font-semibold mb-5">{toolTitle} FAQ</h2>
       <div className="grid gap-5">
         <FAQItem
-          question="Are my files uploaded?"
-          answer="No. Your files are processed in your browser and never uploaded."
+          question="Is this tool free?"
+          answer="Yes. Creator Kit tools are free to use in your browser."
         />
         <FAQItem
-          question="Does this need an account?"
-          answer="No. There is no login, no database, and no subscription required."
+          question="Are my files uploaded?"
+          answer="No. Files are processed locally in your browser and never uploaded."
+        />
+        <FAQItem
+          question="Does this work on mobile?"
+          answer="Most image and audio tools work on modern mobile browsers. Large video tools work best on desktop."
+        />
+        <FAQItem
+          question="Is processing private?"
+          answer="Yes. Processing happens on your device, with no login, no database storage, and no server-side file handling."
         />
         <FAQItem
           question="Why can large video or audio files take longer?"

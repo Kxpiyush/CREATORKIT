@@ -1,16 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientToolPage } from "@/components/toolkit/ClientToolPage";
+import { getToolSeo } from "@/lib/client-tools";
+
+const seo = getToolSeo("video-to-gif");
 
 export const Route = createFileRoute("/video-to-gif")({
   head: () => ({
     meta: [
-      { title: "Video to GIF Converter - Free Browser Tool" },
-      {
-        name: "description",
-        content:
-          "Convert video clips to GIF directly in your browser. Nothing uploads.",
-      },
+      { title: seo.title },
+      { name: "description", content: seo.description },
+      { name: "robots", content: "index,follow" },
+      { property: "og:title", content: seo.title },
+      { property: "og:description", content: seo.description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: `https://creatorkit.app${seo.path}` }],
   }),
   component: RouteComponent,
 });

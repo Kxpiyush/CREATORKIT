@@ -1,16 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientToolPage } from "@/components/toolkit/ClientToolPage";
+import { getToolSeo } from "@/lib/client-tools";
+
+const seo = getToolSeo("jpg-to-png");
 
 export const Route = createFileRoute("/jpg-to-png")({
   head: () => ({
     meta: [
-      { title: "JPG to PNG Converter - Free Browser Tool" },
-      {
-        name: "description",
-        content:
-          "Convert JPG images to PNG directly in your browser. Your files are processed locally and never uploaded.",
-      },
+      { title: seo.title },
+      { name: "description", content: seo.description },
+      { name: "robots", content: "index,follow" },
+      { property: "og:title", content: seo.title },
+      { property: "og:description", content: seo.description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: `https://creatorkit.app${seo.path}` }],
   }),
   component: RouteComponent,
 });
