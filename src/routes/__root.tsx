@@ -4,13 +4,24 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { SiteFooter } from "@/components/site/Footer";
 import { Toaster } from "@/components/ui/sonner";
+
+const GA_MEASUREMENT_ID = "G-78QFQBWNC7";
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  }
+}
 
 function NotFoundComponent() {
   return (
@@ -108,6 +119,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -122,9 +144,27 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <GoogleAnalyticsPageViews />
       <Outlet />
       <SiteFooter />
       <Toaster theme="dark" position="bottom-right" />
     </QueryClientProvider>
   );
+}
+
+function GoogleAnalyticsPageViews() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+
+    const pagePath = `${location.pathname}${location.searchStr || ""}`;
+    window.gtag("config", GA_MEASUREMENT_ID, {
+      page_path: pagePath,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
+  }, [location.pathname, location.searchStr]);
+
+  return null;
 }

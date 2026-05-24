@@ -30,7 +30,7 @@ function PrivacyPolicy() {
       sections={[
         {
           title: "Overview",
-          body: "Creator Kit provides browser-based media tools for images, audio, and video. This policy explains what information may be handled when you use the website, how files are processed, and how future analytics or advertising tools may work.",
+          body: "Creator Kit provides browser-based media tools for images, audio, and video. This policy explains what information may be handled when you use the website, how files are processed, and how analytics or future advertising tools may work.",
         },
         {
           title: "Files are processed locally",
@@ -54,7 +54,7 @@ function PrivacyPolicy() {
         },
         {
           title: "Analytics",
-          body: "Creator Kit may add basic analytics in the future to understand traffic, popular tools, device types, and performance issues. Analytics will be used to improve the website and will not upload or inspect your selected media files.",
+          body: "Creator Kit uses Google Analytics 4 to understand traffic, popular pages, device types, and performance issues. Analytics helps improve the website and does not upload, inspect, or receive your selected media files.",
         },
         {
           title: "Google AdSense, ads, and cookies",
@@ -78,7 +78,7 @@ function PrivacyPolicy() {
         },
         {
           title: "Your choices",
-          body: "You can avoid sending personal information by using the tools without contacting us. You can also control browser cookies through your browser settings, and future advertising or analytics tools may provide additional opt-out or consent options.",
+          body: "You can avoid sending personal information by using the tools without contacting us. You can also control browser cookies through your browser settings, and Google or future advertising tools may provide additional opt-out or consent options.",
         },
         {
           title: "Changes to this policy",
