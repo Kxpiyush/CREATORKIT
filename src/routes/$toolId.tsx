@@ -15,7 +15,7 @@ export const Route = createFileRoute("/$toolId")({
     }
 
     const seo = getToolSeo(params.toolId);
-    const url = `https://creatorkit.app${seo.path}`;
+    const url = `https://CreatorKitTools.com${seo.path}`;
 
     return {
       meta: [

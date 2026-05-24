@@ -15,7 +15,7 @@ export const Route = createFileRoute("/video-to-gif")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
-    links: [{ rel: "canonical", href: `https://creatorkit.app${seo.path}` }],
+    links: [{ rel: "canonical", href: `https://CreatorKitTools.com${seo.path}` }],
   }),
   component: RouteComponent,
 });
