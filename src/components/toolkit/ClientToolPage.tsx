@@ -180,6 +180,7 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
 
             <div className="space-y-6">
               <UploadPanel
+                key={tool.id}
                 toolId={tool.id}
                 accept={tool.accept}
                 multiple={tool.multiple}
@@ -297,11 +298,15 @@ function UploadPanel({
       )}
     >
       <input
+        key={toolId}
         type="file"
         accept={accept}
         multiple={multiple}
         className="hidden"
-        onChange={(event) => onFiles(event.target.files)}
+        onChange={(event) => {
+          onFiles(event.target.files);
+          event.currentTarget.value = "";
+        }}
       />
       <div className="size-14 mx-auto rounded-2xl border border-border bg-muted grid place-items-center mb-4">
         <Upload className="size-5 text-muted-foreground" />
@@ -544,7 +549,7 @@ function VideoWarning() {
     <div className="rounded-xl border border-amber-300/40 bg-amber-50 px-5 py-4 text-sm text-amber-950 dark:bg-amber-400/10 dark:text-amber-100">
       <h2 className="font-semibold">Video tools run locally in your browser</h2>
       <p className="mt-1 leading-6">
-        Large files may be slower and use more memory. Recommended maximum file size is about 100 MB.
+        Large files may be slower and use more memory because processing happens on your device.
       </p>
       <p className="mt-2 text-xs opacity-80">
         Large videos may process slowly because everything runs in your browser.

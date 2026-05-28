@@ -459,7 +459,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     route: "/extract-frames",
     accept: "video/*",
     outputName: "frame.jpg",
-    engine: "ffmpeg",
+    engine: "canvas",
   },
   {
     id: "merge-videos",
@@ -576,9 +576,7 @@ async function processVideoTool(
   options: ProcessOptions,
   onProgress: (progress: number, stage: string) => void,
 ): Promise<ProcessResult> {
-  if (files.some((file) => file.size > 100 * 1024 * 1024)) {
-    throw new Error("Recommended maximum is 100 MB. Try a smaller video for browser processing.");
-  }
+  if (tool.id === "extract-frames") return extractVideoFrame(tool, files[0], options, onProgress);
   if (tool.id === "merge-videos" && files.length < 2) throw new Error("Choose at least two video files to merge.");
 
   const ffmpeg = await getFfmpeg(onProgress);
@@ -634,10 +632,6 @@ async function processVideoTool(
         "0",
         outputName,
       ];
-    } else if (tool.id === "extract-frames") {
-      outputName = "frame.jpg";
-      mime = "image/jpeg";
-      args = ["-ss", String(start), "-i", inputNames[0], "-frames:v", "1", "-q:v", "2", outputName];
     } else if (tool.id === "merge-videos") {
       outputName = `merged.${firstVideoExt}`;
       mime = firstVideoExt === "webm" ? "video/webm" : "video/mp4";
@@ -665,6 +659,50 @@ async function processVideoTool(
   } finally {
     ffmpeg.off("progress", progressHandler);
     await Promise.allSettled(writtenFiles.map((name) => ffmpeg.deleteFile(name)));
+  }
+}
+
+async function extractVideoFrame(
+  tool: ToolDefinition,
+  file: File,
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+): Promise<ProcessResult> {
+  onProgress(10, "Preparing file");
+  const video = document.createElement("video");
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "metadata";
+  const url = URL.createObjectURL(file);
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      video.onloadedmetadata = () => resolve();
+      video.onerror = () => reject(new Error("Could not read this video. Try a common MP4 or WebM file."));
+      video.src = url;
+    });
+
+    onProgress(45, "Processing video");
+    const timestamp = clamp(options.start ?? 0, 0, Math.max(0, video.duration || 0));
+    await new Promise<void>((resolve, reject) => {
+      video.onseeked = () => resolve();
+      video.onerror = () => reject(new Error("Could not seek to that timestamp."));
+      video.currentTime = timestamp;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas is not supported in this browser.");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    onProgress(94, "Creating download");
+    const blob = await canvasToBlob(canvas, "image/jpeg", 0.92);
+    onProgress(100, "Done");
+    return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "image/jpeg" };
+  } finally {
+    URL.revokeObjectURL(url);
   }
 }
 
