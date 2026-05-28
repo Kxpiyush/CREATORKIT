@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, Download, FileVideo, Lock, Play, RotateCcw, ShieldCheck, Upload, Zap } from "lucide-react";
+import { BadgeCheck, Copy, Download, FileAudio, FileImage, FileText, FileVideo, Lock, Play, RotateCcw, Upload, Zap } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -22,7 +22,7 @@ interface ClientToolPageProps {
   homepage?: boolean;
 }
 
-export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: ClientToolPageProps) {
+export function ClientToolPage({ toolId = "image-compressor", homepage = false }: ClientToolPageProps) {
   const initialTool = getTool(toolId);
   const [selectedTool, setSelectedTool] = useState(initialTool.id);
   const tool = getTool(selectedTool);
@@ -31,18 +31,20 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
   const [stage, setStage] = useState("");
   const [working, setWorking] = useState(false);
   const [result, setResult] = useState<ProcessResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const [options, setOptions] = useState<ProcessOptions>({
     width: 720,
     height: 720,
     quality: 82,
     start: 0,
     duration: 10,
+    end: 10,
     speed: 1,
     volume: 1.5,
     blur: 6,
-    text: "TOP TEXT",
-    bottomText: "BOTTOM TEXT",
-    watermark: "Video Aid",
+    text: "",
+    bottomText: "",
+    watermark: "CreatorKitTools",
   });
 
   const relatedTools = useMemo(() => {
@@ -60,6 +62,7 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
     setProgress(0);
     setStage("");
     setWorking(false);
+    setErrorMessage("");
   };
 
   const handleFiles = (incoming: FileList | null) => {
@@ -70,15 +73,17 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
     setProgress(0);
     setStage("");
     setWorking(false);
+    setErrorMessage("");
   };
 
   const run = async () => {
-    if (files.length === 0) {
-      toast.error("Choose a file first");
+    if (!canStartTool(tool.id, files, options)) {
+      toast.error(allowsTextOnly(tool.id) ? "Paste text or choose a .txt file first" : "Choose a file first");
       return;
     }
     setWorking(true);
     setResult(null);
+    setErrorMessage("");
     try {
       const output = await processTool(tool.id, files, options, (pct, nextStage) => {
         setProgress(pct);
@@ -87,7 +92,9 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
       setResult(output);
       toast.success("Ready to download");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Processing failed");
+      const message = error instanceof Error ? error.message : "Processing failed";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setWorking(false);
     }
@@ -104,11 +111,11 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
                 All-in-One Creator Toolkit
               </p>
               <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-3">
-                {homepage ? "Free browser-based media tools" : tool.title}
+                {homepage ? "Free browser-based file tools" : tool.title}
               </h1>
               <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
                 {homepage
-                  ? "Convert, compress, trim, resize, and edit image, video, and audio files instantly. No account, no upload queue, no server storage."
+                  ? "Compress, convert, merge, resize, and edit files directly in your browser. No uploads, no account, no server storage."
                   : tool.description}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -135,7 +142,7 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
                   Tool categories
                 </h2>
                 <div className="grid gap-2">
-                  {(["image", "audio", "video"] as const).map((category) => (
+                {(["image", "pdf", "document", "audio", "video"] as const).map((category) => (
                     <a
                       key={category}
                       href={`#${category}`}
@@ -172,7 +179,14 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
             </aside>
 
             <div className="space-y-6">
-              <UploadPanel toolId={tool.id} accept={tool.accept} multiple={tool.multiple} files={files} onFiles={handleFiles} />
+              <UploadPanel
+                toolId={tool.id}
+                accept={tool.accept}
+                multiple={tool.multiple}
+                files={files}
+                onFiles={handleFiles}
+              />
+              {tool.category === "video" && <VideoWarning />}
               <Controls toolId={tool.id} options={options} setOptions={setOptions} />
 
               <div className="rounded-xl border border-border bg-card p-5">
@@ -181,10 +195,9 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
                     <h2 className="text-sm font-semibold">Process in browser</h2>
                     <p className="text-xs text-muted-foreground mt-1">
                       Your files are processed in your browser and never uploaded.
-                      {tool.engine === "media-engine" ? " Best with small files under 50 MB." : ""}
                     </p>
                   </div>
-                  <Button disabled={working || files.length === 0} onClick={run} className="bg-brand text-brand-foreground hover:bg-brand/90 min-w-32">
+                  <Button disabled={working || !canStartTool(tool.id, files, options)} onClick={run} className="bg-brand text-brand-foreground hover:bg-brand/90 min-w-32">
                     {working ? <RotateCcw className="size-4 mr-2 animate-spin" /> : <Play className="size-4 mr-2" />}
                     {working ? "Processing" : "Start"}
                   </Button>
@@ -200,8 +213,18 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
                     </div>
                     {working && progress < 25 && (
                       <p className="mt-3 text-[11px] text-muted-foreground">
-                        Preparing private media tools. First load can take a minute; if it stays here, refresh once and try a smaller file.
+                        Loading media engine. First load can take a minute; if it takes too long, retry or use a smaller file.
                       </p>
+                    )}
+                    {errorMessage && (
+                      <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-foreground">
+                        <p>{errorMessage}</p>
+                        {errorMessage.toLowerCase().includes("media engine") && (
+                          <Button type="button" variant="outline" size="sm" className="mt-3" onClick={run}>
+                            Retry
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
@@ -215,11 +238,12 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
         </section>
 
         <section className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <InfoCard title="Features" text="Drag and drop files, process locally, preview results, and download directly from browser memory." />
+          <InfoCard title="Features" text="Drag and drop files, process locally where available, preview results, and download directly from browser memory." />
           <InfoCard title="Private by design" text="Files never upload to our servers, and this site does not require accounts or cloud storage." />
           <InfoCard title="Fast lightweight pages" text="Image and Web Audio tools use native browser APIs where possible for quick processing." />
         </section>
 
+        <HowToUse toolTitle={tool.title} />
         <FAQ toolTitle={tool.title} />
         <ToolDirectory selectedTool={selectedTool} onSelect={setSelectedTool} />
       </main>
@@ -229,20 +253,18 @@ export function ClientToolPage({ toolId = "video-to-mp3", homepage = false }: Cl
 
 function TopBar() {
   return (
-    <nav className="border-b border-border/60 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+    <nav className="border-b border-border/60 bg-card/90 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <div className="size-7 rounded-md bg-brand text-brand-foreground grid place-items-center font-semibold text-xs">
-            C
-          </div>
-          <span className="text-sm font-semibold tracking-tight">
-            CREATOR<span className="text-brand">_</span>KIT
-          </span>
+          <img src="/favicon-48x48.png" alt="" className="size-8 rounded-lg" />
+          <span className="text-sm font-bold tracking-tight">CreatorKitTools</span>
         </Link>
         <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
           <a href="#image" className="hover:text-foreground">Image</a>
-          <a href="#video" className="hover:text-foreground">Video</a>
+          <a href="#pdf" className="hover:text-foreground">PDF</a>
+          <a href="#document" className="hover:text-foreground">Document</a>
           <a href="#audio" className="hover:text-foreground">Audio</a>
+          <a href="#video" className="hover:text-foreground">Video</a>
         </div>
       </div>
     </nav>
@@ -269,7 +291,10 @@ function UploadPanel({
         event.preventDefault();
         onFiles(event.dataTransfer.files);
       }}
-      className="block rounded-xl border border-dashed border-border bg-card p-8 text-center cursor-pointer hover:border-brand transition-colors"
+      className={cn(
+        "block rounded-2xl border border-dashed border-border bg-card p-10 text-center transition-colors",
+        "cursor-pointer hover:border-brand",
+      )}
     >
       <input
         type="file"
@@ -278,12 +303,12 @@ function UploadPanel({
         className="hidden"
         onChange={(event) => onFiles(event.target.files)}
       />
-      <div className="size-11 mx-auto rounded-lg border border-border bg-muted grid place-items-center mb-4">
-        <Upload className="size-4 text-muted-foreground" />
+      <div className="size-14 mx-auto rounded-2xl border border-border bg-muted grid place-items-center mb-4">
+        <Upload className="size-5 text-muted-foreground" />
       </div>
-      <h2 className="text-sm font-semibold mb-1">Drop files here or click to upload</h2>
+      <h2 className="text-base font-semibold mb-1">Drop files here or click to upload</h2>
       <p className="text-xs text-muted-foreground">
-        {multiple ? "Multiple files supported" : "One file at a time"} / best with files under 250 MB
+        {multiple ? "Multiple files supported" : "One file at a time"} / files stay on your device
       </p>
       {files.length > 0 && (
         <div className="mt-5 grid gap-2 text-left">
@@ -310,14 +335,23 @@ function Controls({
   setOptions: (options: ProcessOptions) => void;
 }) {
   const update = (patch: ProcessOptions) => setOptions({ ...options, ...patch });
-  const needsTiming = toolId.includes("trim") || toolId.includes("cutter") || toolId === "video-to-gif" || toolId === "extract-frames";
-  const needsSize = toolId.includes("resize") || toolId === "image-compressor" || toolId === "video-compressor";
+  const needsTiming = toolId.includes("trim") || toolId.includes("cutter") || toolId === "video-to-gif";
+  const needsTimestamp = toolId === "extract-frames";
+  const needsSize = toolId.includes("resize") || toolId === "image-compressor";
   const needsSpeed = toolId.includes("speed");
   const needsVolume = toolId === "volume-booster";
-  const needsText = toolId === "meme-maker" || toolId === "add-watermark";
+  const needsText =
+    toolId === "meme-maker" ||
+    toolId === "add-watermark" ||
+    toolId === "add-watermark-pdf" ||
+    toolId === "txt-to-pdf" ||
+    toolId === "text-case-converter" ||
+    toolId === "word-counter";
   const needsBlur = toolId === "blur-image";
+  const needsPageRange = toolId === "split-pdf";
+  const needsRotation = toolId === "rotate-pdf";
 
-  if (!needsTiming && !needsSize && !needsSpeed && !needsVolume && !needsText && !needsBlur) {
+  if (!needsTiming && !needsTimestamp && !needsSize && !needsSpeed && !needsVolume && !needsText && !needsBlur && !needsPageRange && !needsRotation) {
     return null;
   }
 
@@ -328,9 +362,14 @@ function Controls({
         {needsTiming && (
           <>
             <Field label="Start seconds" value={options.start ?? 0} onChange={(value) => update({ start: value })} />
-            <Field label="Duration seconds" value={options.duration ?? 10} onChange={(value) => update({ duration: value })} />
+            {toolId === "video-trimmer" || toolId === "video-to-gif" ? (
+              <Field label="End seconds" value={options.end ?? 10} onChange={(value) => update({ end: value })} />
+            ) : (
+              <Field label="Duration seconds" value={options.duration ?? 10} onChange={(value) => update({ duration: value })} />
+            )}
           </>
         )}
+        {needsTimestamp && <Field label="Timestamp seconds" value={options.start ?? 0} onChange={(value) => update({ start: value })} />}
         {needsSize && (
           <>
             <Field label="Width" value={options.width ?? 720} onChange={(value) => update({ width: value })} />
@@ -340,6 +379,12 @@ function Controls({
         {needsSpeed && <Field label="Speed" value={options.speed ?? 1} step={0.25} onChange={(value) => update({ speed: value })} />}
         {needsVolume && <Field label="Volume boost" value={options.volume ?? 1.5} step={0.25} onChange={(value) => update({ volume: value })} />}
         {needsBlur && <Field label="Blur pixels" value={options.blur ?? 6} onChange={(value) => update({ blur: value })} />}
+        {needsPageRange && (
+          <TextField label="Page range" value={options.pageRange ?? ""} placeholder="Example: 1-3 or 1,3,5" onChange={(value) => update({ pageRange: value })} />
+        )}
+        {needsRotation && (
+          <Field label="Rotation angle" value={options.rotation ?? 90} step={90} onChange={(value) => update({ rotation: value })} />
+        )}
         {toolId === "meme-maker" && (
           <>
             <TextField label="Top text" value={options.text ?? ""} onChange={(value) => update({ text: value })} />
@@ -348,6 +393,57 @@ function Controls({
         )}
         {toolId === "add-watermark" && (
           <TextField label="Watermark" value={options.watermark ?? ""} onChange={(value) => update({ watermark: value })} />
+        )}
+        {toolId === "add-watermark-pdf" && (
+          <TextField label="Watermark text" value={options.watermark ?? ""} onChange={(value) => update({ watermark: value })} />
+        )}
+        {toolId === "txt-to-pdf" && (
+          <label className="grid gap-2 md:col-span-2">
+            <span className="text-xs text-muted-foreground">Text content</span>
+            <textarea
+              className="min-h-36 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={options.text ?? ""}
+              onChange={(event) => update({ text: event.target.value })}
+              placeholder="Paste text here, or upload a .txt file above."
+            />
+          </label>
+        )}
+        {toolId === "text-case-converter" && (
+          <>
+            <label className="grid gap-2">
+              <span className="text-xs text-muted-foreground">Conversion</span>
+              <select
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={textCaseMode(options.text)}
+                onChange={(event) => update({ text: event.target.value })}
+              >
+                <option value="uppercase">Uppercase</option>
+                <option value="lowercase">Lowercase</option>
+                <option value="title">Title Case</option>
+                <option value="sentence">Sentence case</option>
+              </select>
+            </label>
+            <label className="grid gap-2 md:col-span-2">
+              <span className="text-xs text-muted-foreground">Text content</span>
+              <textarea
+                className="min-h-36 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={options.bottomText ?? ""}
+                onChange={(event) => update({ bottomText: event.target.value })}
+                placeholder="Paste text here, or upload a .txt file above."
+              />
+            </label>
+          </>
+        )}
+        {toolId === "word-counter" && (
+          <label className="grid gap-2 md:col-span-2">
+            <span className="text-xs text-muted-foreground">Text content</span>
+            <textarea
+              className="min-h-36 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={options.bottomText ?? ""}
+              onChange={(event) => update({ bottomText: event.target.value })}
+              placeholder="Paste text here, or upload a .txt file above."
+            />
+          </label>
         )}
       </div>
     </div>
@@ -376,16 +472,18 @@ function Field({
 function TextField({
   label,
   value,
+  placeholder,
   onChange,
 }: {
   label: string;
   value: string;
+  placeholder?: string;
   onChange: (value: string) => void;
 }) {
   return (
     <label className="grid gap-2">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <Input value={value} onChange={(event) => onChange(event.target.value)} />
+      <Input value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }
@@ -410,11 +508,30 @@ function ResultPanel({ result, onDownload }: { result: ProcessResult | null; onD
           <h2 className="text-sm font-semibold">Download ready</h2>
           <p className="text-xs text-muted-foreground">{result.filename}</p>
         </div>
-        <Button onClick={onDownload} className="bg-brand text-brand-foreground hover:bg-brand/90">
-          <Download className="size-4 mr-2" />
-          Download
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {result.text && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                void navigator.clipboard.writeText(result.text ?? "");
+                toast.success("Copied");
+              }}
+            >
+              <Copy className="size-4 mr-2" />
+              Copy
+            </Button>
+          )}
+          <Button onClick={onDownload} className="bg-brand text-brand-foreground hover:bg-brand/90">
+            <Download className="size-4 mr-2" />
+            Download
+          </Button>
+        </div>
       </div>
+      {result.text && (
+        <pre className="max-h-[420px] overflow-auto rounded-lg border border-border bg-background p-4 text-left text-xs leading-6 whitespace-pre-wrap">
+          {result.text}
+        </pre>
+      )}
       {isImage && result.previewUrl && <img src={result.previewUrl} alt="Preview" className="max-h-[420px] rounded-lg border border-border mx-auto" />}
       {isVideo && result.previewUrl && <video src={result.previewUrl} controls className="w-full max-h-[420px] rounded-lg border border-border" />}
       {isAudio && result.previewUrl && <audio src={result.previewUrl} controls className="w-full" />}
@@ -422,13 +539,27 @@ function ResultPanel({ result, onDownload }: { result: ProcessResult | null; onD
   );
 }
 
+function VideoWarning() {
+  return (
+    <div className="rounded-xl border border-amber-300/40 bg-amber-50 px-5 py-4 text-sm text-amber-950 dark:bg-amber-400/10 dark:text-amber-100">
+      <h2 className="font-semibold">Video tools run locally in your browser</h2>
+      <p className="mt-1 leading-6">
+        Large files may be slower and use more memory. Recommended maximum file size is about 100 MB.
+      </p>
+      <p className="mt-2 text-xs opacity-80">
+        Large videos may process slowly because everything runs in your browser.
+      </p>
+    </div>
+  );
+}
+
 function ToolDirectory({ selectedTool }: { selectedTool: ClientToolId; onSelect: (tool: ClientToolId) => void }) {
   return (
     <section className="mt-14 space-y-8">
-      {(["image", "audio", "video"] as const).map((category) => (
+                {(["image", "pdf", "document", "audio", "video"] as const).map((category) => (
         <div key={category} id={category}>
           <h2 className="text-xl font-semibold capitalize mb-4">
-            {category === "video" ? "Beta video tools" : `${category} tools`}
+            {`${category} tools`}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {TOOL_DEFINITIONS.filter((tool) => tool.category === category).map((tool) => (
@@ -442,11 +573,6 @@ function ToolDirectory({ selectedTool }: { selectedTool: ClientToolId; onSelect:
               >
                 <span className="flex items-center justify-between gap-2 text-sm font-semibold">
                   {tool.title}
-                  {tool.beta && (
-                    <span className="rounded-md border border-border bg-surface-2 px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-                      Beta
-                    </span>
-                  )}
                 </span>
                 <span className="block text-xs text-muted-foreground mt-1">{tool.description}</span>
               </Link>
@@ -456,6 +582,44 @@ function ToolDirectory({ selectedTool }: { selectedTool: ClientToolId; onSelect:
       ))}
     </section>
   );
+}
+
+function HowToUse({ toolTitle }: { toolTitle: string }) {
+  const steps = ["Choose your file", "Adjust options", "Process in browser", "Download result"];
+
+  return (
+    <section className="mt-14 rounded-xl border border-border bg-card p-6">
+      <h2 className="text-xl font-semibold mb-5">How to use {toolTitle}</h2>
+      <div className="grid gap-3 md:grid-cols-4">
+        {steps.map((step, index) => (
+          <div key={step} className="rounded-lg border border-border bg-background p-4">
+            <span className="grid size-8 place-items-center rounded-full bg-brand text-xs font-bold text-brand-foreground">
+              {index + 1}
+            </span>
+            <h3 className="mt-3 text-sm font-semibold">{step}</h3>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function allowsTextOnly(toolId: ClientToolId) {
+  return toolId === "txt-to-pdf" || toolId === "text-case-converter" || toolId === "word-counter";
+}
+
+function canStartTool(toolId: ClientToolId, files: File[], options: ProcessOptions) {
+  if (!allowsTextOnly(toolId)) return files.length > 0;
+  return files.length > 0 || textOnlyValue(toolId, options).length > 0;
+}
+
+function textOnlyValue(toolId: ClientToolId, options: ProcessOptions) {
+  if (toolId === "txt-to-pdf") return (options.text ?? "").trim();
+  return (options.bottomText ?? "").trim();
+}
+
+function textCaseMode(value?: string) {
+  return value === "lowercase" || value === "title" || value === "sentence" ? value : "uppercase";
 }
 
 function FAQ({ toolTitle }: { toolTitle: string }) {
@@ -473,15 +637,15 @@ function FAQ({ toolTitle }: { toolTitle: string }) {
         />
         <FAQItem
           question="Does this work on mobile?"
-          answer="Most image and audio tools work on modern mobile browsers. Large video tools work best on desktop."
+          answer="Most image, PDF, document, audio, and smaller video tools work on modern mobile browsers. Large files work best on desktop."
         />
         <FAQItem
           question="Is processing private?"
           answer="Yes. Processing happens on your device, with no login, no database storage, and no server-side file handling."
         />
         <FAQItem
-          question="Why can large video or audio files take longer?"
-          answer="Video and audio conversion can be heavy, so your browser may need extra time to prepare local media tools and process the file on your device."
+          question="Why can large PDF, audio, or video files take longer?"
+          answer="PDF rendering, audio editing, and video conversion can be heavy, so your browser may need extra time and memory to process large files on your device."
         />
       </div>
     </section>

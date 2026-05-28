@@ -5,18 +5,17 @@ import { cn } from "@/lib/utils";
 const KEY = "amt:theme";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
 
   useEffect(() => {
-    const stored = (localStorage.getItem(KEY) as "dark" | "light" | null) ?? "dark";
+    const stored = (localStorage.getItem(KEY) as "dark" | "light" | null) ?? "light";
     apply(stored);
     setTheme(stored);
   }, []);
 
   const apply = (t: "dark" | "light") => {
     const root = document.documentElement;
-    // Our :root holds dark tokens by default; .dark class flips to light values.
-    if (t === "light") root.classList.add("dark");
+    if (t === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
   };
 

@@ -1,7 +1,10 @@
+import { degrees, rgb, StandardFonts, PDFDocument } from "pdf-lib";
 import { jsPDF } from "jspdf";
-import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import JSZip from "jszip";
+import ffmpegCoreUrl from "@ffmpeg/core?url";
+import ffmpegCoreWasmUrl from "@ffmpeg/core/wasm?url";
 
-export type ToolCategory = "image" | "video" | "audio";
+export type ToolCategory = "image" | "pdf" | "document" | "audio" | "video";
 
 export type ClientToolId =
   | "jpg-to-png"
@@ -13,24 +16,30 @@ export type ClientToolId =
   | "meme-maker"
   | "add-watermark"
   | "image-to-pdf"
-  | "video-to-mp3"
-  | "video-to-gif"
-  | "video-compressor"
-  | "video-trimmer"
-  | "merge-videos"
-  | "extract-frames"
-  | "resize-video"
-  | "mute-video"
-  | "change-video-speed"
+  | "merge-pdf"
+  | "split-pdf"
+  | "rotate-pdf"
+  | "add-watermark-pdf"
+  | "jpg-to-pdf"
+  | "png-to-pdf"
+  | "pdf-to-jpg"
+  | "txt-to-pdf"
+  | "docx-to-text"
+  | "docx-to-html"
+  | "text-case-converter"
+  | "word-counter"
   | "mp3-cutter"
-  | "audio-compressor"
   | "audio-merger"
-  | "wav-to-mp3"
-  | "mp3-to-wav"
   | "volume-booster"
   | "reverse-audio"
   | "audio-trimmer"
-  | "change-audio-speed";
+  | "change-audio-speed"
+  | "video-to-mp3"
+  | "mute-video"
+  | "video-trimmer"
+  | "video-to-gif"
+  | "extract-frames"
+  | "merge-videos";
 
 export interface ToolDefinition {
   id: ClientToolId;
@@ -43,8 +52,7 @@ export interface ToolDefinition {
   accept: string;
   multiple?: boolean;
   outputName: string;
-  beta?: boolean;
-  engine?: "canvas" | "web-audio" | "media-engine";
+  engine: "canvas" | "pdf-lib" | "pdf-js" | "jspdf" | "mammoth" | "text" | "web-audio" | "ffmpeg";
 }
 
 export interface ProcessOptions {
@@ -53,12 +61,15 @@ export interface ProcessOptions {
   quality?: number;
   start?: number;
   duration?: number;
+  end?: number;
   speed?: number;
   volume?: number;
   text?: string;
   bottomText?: string;
   watermark?: string;
   blur?: number;
+  rotation?: number;
+  pageRange?: string;
 }
 
 export interface ProcessResult {
@@ -66,19 +77,32 @@ export interface ProcessResult {
   filename: string;
   previewUrl?: string;
   mime: string;
+  text?: string;
 }
 
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
   {
+    id: "image-compressor",
+    title: "Image Compressor",
+    description: "Reduce JPG and PNG file size in your browser.",
+    seoTitle: "Free Image Compressor Online - Private Browser Tool",
+    metaDescription: "Compress JPG and PNG images directly in your browser. No uploads, private, fast, and free.",
+    category: "image",
+    route: "/image-compressor",
+    accept: "image/*",
+    outputName: "compressed.jpg",
+    engine: "canvas",
+  },
+  {
     id: "jpg-to-png",
     title: "JPG to PNG",
-    description: "Convert JPG images to transparent-ready PNG files.",
+    description: "Convert JPG images to PNG files.",
     seoTitle: "JPG to PNG Converter - Free Online Browser Tool",
     metaDescription: "Convert JPG images to PNG directly in your browser. No uploads, private, fast, and free.",
     category: "image",
+    route: "/jpg-to-png",
     accept: "image/jpeg",
     outputName: "converted.png",
-    route: "/jpg-to-png",
     engine: "canvas",
   },
   {
@@ -88,21 +112,9 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     seoTitle: "PNG to JPG Converter - Free Online Browser Tool",
     metaDescription: "Convert PNG images to JPG in your browser. No server uploads, no login, private, and free.",
     category: "image",
+    route: "/png-to-jpg",
     accept: "image/png",
     outputName: "converted.jpg",
-    route: "/png-to-jpg",
-    engine: "canvas",
-  },
-  {
-    id: "image-compressor",
-    title: "Image Compressor",
-    description: "Reduce image file size in your browser.",
-    seoTitle: "Free Image Compressor Online - Private Browser Tool",
-    metaDescription: "Compress JPG and PNG images directly in your browser. No uploads, private, fast, and free.",
-    category: "image",
-    route: "/image-compressor",
-    accept: "image/*",
-    outputName: "compressed.jpg",
     engine: "canvas",
   },
   {
@@ -124,9 +136,9 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     seoTitle: "Crop Image Online - Free Private Browser Tool",
     metaDescription: "Crop images directly in your browser. Fast, private, free, and no server uploads.",
     category: "image",
+    route: "/crop-image",
     accept: "image/*",
     outputName: "cropped.png",
-    route: "/crop-image",
     engine: "canvas",
   },
   {
@@ -172,115 +184,154 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     accept: "image/*",
     multiple: true,
     outputName: "images.pdf",
-    engine: "canvas",
+    engine: "jspdf",
   },
   {
-    id: "video-to-mp3",
-    title: "Video to MP3",
-    description: "Extract audio from a video file.",
-    seoTitle: "Video to MP3 Converter - Free Browser Tool",
-    metaDescription: "Extract MP3 audio from video files in your browser. Private beta tool with no server upload.",
-    category: "video",
-    route: "/video-to-mp3",
-    accept: "video/*",
-    outputName: "audio.mp3",
-    beta: true,
-    engine: "media-engine",
-  },
-  {
-    id: "video-to-gif",
-    title: "Video to GIF",
-    description: "Convert the first seconds of video to GIF.",
-    seoTitle: "Video to GIF Converter - Free Browser Tool",
-    metaDescription: "Convert short video clips to GIF in your browser. No uploads, private, and free.",
-    category: "video",
-    route: "/video-to-gif",
-    accept: "video/*",
-    outputName: "clip.gif",
-    beta: true,
-    engine: "media-engine",
-  },
-  {
-    id: "video-compressor",
-    title: "Video Compressor",
-    description: "Shrink videos directly on your device.",
-    seoTitle: "Video Compressor Online - Browser Beta Tool",
-    metaDescription: "Compress smaller videos in your browser. Files are processed locally and never uploaded.",
-    category: "video",
-    accept: "video/*",
-    outputName: "compressed.mp4",
-    beta: true,
-    engine: "media-engine",
-  },
-  {
-    id: "video-trimmer",
-    title: "Video Trimmer",
-    description: "Cut a short clip from a video.",
-    seoTitle: "Video Trimmer Online - Free Browser Tool",
-    metaDescription: "Trim short video clips directly in your browser without uploading files to a server.",
-    category: "video",
-    accept: "video/*",
-    outputName: "trimmed.mp4",
-    beta: true,
-    engine: "media-engine",
-  },
-  {
-    id: "merge-videos",
-    title: "Merge Videos",
-    description: "Join multiple videos in browser memory.",
-    seoTitle: "Merge Videos Online - Browser Beta Tool",
-    metaDescription: "Join video files locally in your browser. No accounts, no uploads, and no server storage.",
-    category: "video",
-    accept: "video/*",
+    id: "merge-pdf",
+    title: "Merge PDF",
+    description: "Upload multiple PDFs and merge them into one PDF.",
+    seoTitle: "Merge PDF Online - Free Browser Tool",
+    metaDescription: "Merge PDF files directly in your browser. No uploads, no account, private, and free.",
+    category: "document",
+    route: "/merge-pdf",
+    accept: "application/pdf",
     multiple: true,
-    outputName: "merged.mp4",
-    beta: true,
-    engine: "media-engine",
+    outputName: "merged.pdf",
+    engine: "pdf-lib",
   },
   {
-    id: "extract-frames",
-    title: "Extract Thumbnail",
-    description: "Export a still frame from video.",
-    seoTitle: "Extract Video Thumbnail Online - Free Tool",
-    metaDescription: "Extract a still frame thumbnail from a video in your browser with private local processing.",
-    category: "video",
-    accept: "video/*",
-    outputName: "thumbnail.jpg",
-    engine: "media-engine",
+    id: "split-pdf",
+    title: "Split PDF",
+    description: "Extract a page range from a PDF file.",
+    seoTitle: "Split PDF Online - Free Browser Tool",
+    metaDescription: "Split PDF pages directly in your browser. No uploads, private, fast, and free.",
+    category: "pdf",
+    route: "/split-pdf",
+    accept: "application/pdf",
+    outputName: "split.pdf",
+    engine: "pdf-lib",
   },
   {
-    id: "resize-video",
-    title: "Resize Video",
-    description: "Scale video width for social platforms.",
-    seoTitle: "Resize Video Online - Browser Beta Tool",
-    metaDescription: "Resize videos locally in your browser for social platforms. No server upload required.",
-    category: "video",
-    accept: "video/*",
-    outputName: "resized.mp4",
-    beta: true,
-    engine: "media-engine",
+    id: "rotate-pdf",
+    title: "Rotate PDF",
+    description: "Rotate every page in a PDF by 90, 180, or 270 degrees.",
+    seoTitle: "Rotate PDF Online - Free Browser Tool",
+    metaDescription: "Rotate PDF pages directly in your browser. Your files are never uploaded.",
+    category: "pdf",
+    route: "/rotate-pdf",
+    accept: "application/pdf",
+    outputName: "rotated.pdf",
+    engine: "pdf-lib",
   },
   {
-    id: "mute-video",
-    title: "Mute Video",
-    description: "Remove the audio track from a video.",
-    seoTitle: "Mute Video Online - Free Browser Tool",
-    metaDescription: "Remove audio from videos directly in your browser. Private, free, and no upload required.",
-    category: "video",
-    accept: "video/*",
-    outputName: "muted.mp4",
-    engine: "media-engine",
+    id: "add-watermark-pdf",
+    title: "Add Watermark to PDF",
+    description: "Add a text watermark to each PDF page.",
+    seoTitle: "Add Watermark to PDF Online - Free Tool",
+    metaDescription: "Add a text watermark to PDF pages directly in your browser with no uploads.",
+    category: "pdf",
+    route: "/add-watermark-pdf",
+    accept: "application/pdf",
+    outputName: "watermarked.pdf",
+    engine: "pdf-lib",
   },
   {
-    id: "change-video-speed",
-    title: "Change Video Speed",
-    description: "Speed up or slow down a video.",
-    seoTitle: "Change Video Speed Online - Browser Tool",
-    metaDescription: "Speed up or slow down videos locally in your browser. Files are never uploaded.",
-    category: "video",
-    accept: "video/*",
-    outputName: "speed-video.mp4",
-    engine: "media-engine",
+    id: "jpg-to-pdf",
+    title: "JPG to PDF",
+    description: "Convert JPG images into one PDF.",
+    seoTitle: "JPG to PDF Converter - Free Browser Tool",
+    metaDescription: "Create PDF files from JPG images directly in your browser. No uploads or account required.",
+    category: "pdf",
+    route: "/jpg-to-pdf",
+    accept: "image/jpeg",
+    multiple: true,
+    outputName: "images.pdf",
+    engine: "jspdf",
+  },
+  {
+    id: "png-to-pdf",
+    title: "PNG to PDF",
+    description: "Convert PNG images into one PDF.",
+    seoTitle: "PNG to PDF Converter - Free Browser Tool",
+    metaDescription: "Convert PNG images to PDF directly in your browser. No server uploads.",
+    category: "pdf",
+    route: "/png-to-pdf",
+    accept: "image/png",
+    multiple: true,
+    outputName: "images.pdf",
+    engine: "jspdf",
+  },
+  {
+    id: "pdf-to-jpg",
+    title: "PDF to JPG",
+    description: "Render PDF pages to JPG images and download them as a ZIP.",
+    seoTitle: "PDF to JPG Converter - Free Online Tool",
+    metaDescription: "Convert PDF pages to JPG images in your browser using pdf.js. No uploads, private, and free.",
+    category: "pdf",
+    route: "/pdf-to-jpg",
+    accept: "application/pdf",
+    outputName: "pdf-pages.zip",
+    engine: "pdf-js",
+  },
+  {
+    id: "txt-to-pdf",
+    title: "TXT to PDF",
+    description: "Paste or upload text and convert it into a PDF.",
+    seoTitle: "TXT to PDF Converter - Free Browser Tool",
+    metaDescription: "Convert text to PDF directly in your browser. No uploads, no server processing, and free.",
+    category: "pdf",
+    route: "/txt-to-pdf",
+    accept: ".txt,text/plain",
+    outputName: "text.pdf",
+    engine: "jspdf",
+  },
+  {
+    id: "docx-to-text",
+    title: "DOCX to Text",
+    description: "Extract readable plain text from a DOCX file.",
+    seoTitle: "DOCX to Text Converter - Free Browser Tool",
+    metaDescription: "Extract readable text from DOCX files directly in your browser using Mammoth. No uploads or server processing.",
+    category: "document",
+    route: "/docx-to-text",
+    accept: ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    outputName: "document.txt",
+    engine: "mammoth",
+  },
+  {
+    id: "docx-to-html",
+    title: "DOCX to HTML",
+    description: "Convert basic DOCX formatting into clean HTML.",
+    seoTitle: "DOCX to HTML Converter - Free Browser Tool",
+    metaDescription: "Convert DOCX files to basic HTML directly in your browser using Mammoth. No uploads or paid APIs.",
+    category: "document",
+    route: "/docx-to-html",
+    accept: ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    outputName: "document.html",
+    engine: "mammoth",
+  },
+  {
+    id: "text-case-converter",
+    title: "Text Case Converter",
+    description: "Convert pasted text to uppercase, lowercase, title case, or sentence case.",
+    seoTitle: "Text Case Converter - Free Online Tool",
+    metaDescription: "Convert text case in your browser. Uppercase, lowercase, title case, and sentence case with copy and download.",
+    category: "document",
+    route: "/text-case-converter",
+    accept: ".txt,text/plain",
+    outputName: "converted-text.txt",
+    engine: "text",
+  },
+  {
+    id: "word-counter",
+    title: "Word Counter",
+    description: "Count words, characters, sentences, and paragraphs from pasted text.",
+    seoTitle: "Word Counter Online - Free Browser Tool",
+    metaDescription: "Count words, characters, sentences, and paragraphs in your browser. Private, fast, and free.",
+    category: "document",
+    route: "/word-counter",
+    accept: ".txt,text/plain",
+    outputName: "word-count.txt",
+    engine: "text",
   },
   {
     id: "mp3-cutter",
@@ -295,18 +346,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     engine: "web-audio",
   },
   {
-    id: "audio-compressor",
-    title: "Audio Compressor",
-    description: "Beta MP3 compression using the browser media engine.",
-    seoTitle: "Audio Compressor Online - Browser Beta Tool",
-    metaDescription: "Compress audio files in your browser. Private beta tool with no server upload or account.",
-    category: "audio",
-    accept: "audio/*",
-    outputName: "compressed.mp3",
-    beta: true,
-    engine: "media-engine",
-  },
-  {
     id: "audio-merger",
     title: "Audio Merger",
     description: "Combine multiple audio files into one WAV.",
@@ -319,26 +358,14 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     engine: "web-audio",
   },
   {
-    id: "wav-to-mp3",
-    title: "WAV to MP3",
-    description: "Beta MP3 export using the browser media engine.",
-    seoTitle: "WAV to MP3 Converter - Free Browser Beta Tool",
-    metaDescription: "Convert WAV audio to MP3 in your browser. Private beta tool with no file uploads.",
+    id: "audio-trimmer",
+    title: "Audio Trimmer",
+    description: "Cut a section from audio and download WAV.",
+    seoTitle: "Audio Trimmer Online - Free Browser Tool",
+    metaDescription: "Trim audio files privately in your browser and download WAV output. No uploads required.",
     category: "audio",
-    accept: ".wav,audio/wav,audio/wave",
-    outputName: "converted.mp3",
-    beta: true,
-    engine: "media-engine",
-  },
-  {
-    id: "mp3-to-wav",
-    title: "MP3 to WAV",
-    description: "Convert MP3 audio to WAV.",
-    seoTitle: "MP3 to WAV Converter - Free Browser Tool",
-    metaDescription: "Convert MP3 audio to WAV locally in your browser. No server uploads or accounts.",
-    category: "audio",
-    accept: ".mp3,audio/mpeg",
-    outputName: "converted.wav",
+    accept: "audio/*",
+    outputName: "trimmed.wav",
     engine: "web-audio",
   },
   {
@@ -364,17 +391,6 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     engine: "web-audio",
   },
   {
-    id: "audio-trimmer",
-    title: "Audio Trimmer",
-    description: "Cut a section from audio and download WAV.",
-    seoTitle: "Audio Trimmer Online - Free Browser Tool",
-    metaDescription: "Trim audio files privately in your browser and download WAV output. No uploads required.",
-    category: "audio",
-    accept: "audio/*",
-    outputName: "trimmed.wav",
-    engine: "web-audio",
-  },
-  {
     id: "change-audio-speed",
     title: "Change Audio Speed",
     description: "Speed up or slow down audio and download WAV.",
@@ -385,10 +401,80 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     outputName: "speed-audio.wav",
     engine: "web-audio",
   },
+  {
+    id: "video-to-mp3",
+    title: "Video to MP3",
+    description: "Extract audio from MP4, MOV, or WebM and download an MP3.",
+    seoTitle: "Video to MP3 Converter - Free Browser Tool",
+    metaDescription: "Convert video to MP3 directly in your browser with ffmpeg.wasm. No uploads, no server processing, and free.",
+    category: "video",
+    route: "/video-to-mp3",
+    accept: "video/mp4,video/quicktime,video/webm",
+    outputName: "audio.mp3",
+    engine: "ffmpeg",
+  },
+  {
+    id: "mute-video",
+    title: "Mute Video",
+    description: "Remove the audio track from a video and download a muted copy.",
+    seoTitle: "Mute Video Online - Free Browser Tool",
+    metaDescription: "Mute videos directly in your browser. Remove audio locally with no uploads or server storage.",
+    category: "video",
+    route: "/mute-video",
+    accept: "video/*",
+    outputName: "muted.mp4",
+    engine: "ffmpeg",
+  },
+  {
+    id: "video-trimmer",
+    title: "Video Trimmer",
+    description: "Choose start and end time, then export a trimmed video.",
+    seoTitle: "Video Trimmer Online - Free Browser Tool",
+    metaDescription: "Trim videos locally in your browser using ffmpeg.wasm. Private, free, and no server upload.",
+    category: "video",
+    route: "/video-trimmer",
+    accept: "video/*",
+    outputName: "trimmed.mp4",
+    engine: "ffmpeg",
+  },
+  {
+    id: "video-to-gif",
+    title: "Video to GIF",
+    description: "Convert a short video clip into a GIF in your browser.",
+    seoTitle: "Video to GIF Converter - Free Browser Tool",
+    metaDescription: "Create GIFs from short videos directly in your browser. No uploads, no account, and no backend.",
+    category: "video",
+    route: "/video-to-gif",
+    accept: "video/*",
+    outputName: "video.gif",
+    engine: "ffmpeg",
+  },
+  {
+    id: "extract-frames",
+    title: "Extract Frames",
+    description: "Capture a JPG frame from a video timestamp.",
+    seoTitle: "Extract Frames from Video - Free Browser Tool",
+    metaDescription: "Extract video thumbnails as JPG images locally in your browser. Files are never uploaded.",
+    category: "video",
+    route: "/extract-frames",
+    accept: "video/*",
+    outputName: "frame.jpg",
+    engine: "ffmpeg",
+  },
+  {
+    id: "merge-videos",
+    title: "Merge Videos",
+    description: "Merge compatible videos with matching format, codec, resolution, and dimensions.",
+    seoTitle: "Merge Videos Online - Free Browser Tool",
+    metaDescription: "Merge compatible videos locally in your browser. No uploads, no server processing, and no paid API.",
+    category: "video",
+    route: "/merge-videos",
+    accept: "video/*",
+    multiple: true,
+    outputName: "merged.mp4",
+    engine: "ffmpeg",
+  },
 ];
-
-let ffmpegPromise: Promise<FFmpeg> | null = null;
-const FFMPEG_CORE_VERSION = "esm-0.12.10";
 
 export function getTool(id: ClientToolId): ToolDefinition {
   const tool = TOOL_DEFINITIONS.find((item) => item.id === id);
@@ -415,19 +501,6 @@ export function getToolSeo(id: ClientToolId) {
   };
 }
 
-function enforceBrowserLimit(tool: ToolDefinition, files: File[]) {
-  if (tool.engine !== "media-engine") return;
-
-  const maxMb = tool.category === "video" ? 50 : 30;
-  const totalMb = files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024;
-
-  if (totalMb > maxMb) {
-    throw new Error(
-      `${tool.title} runs fully in your browser. Please use files under ${maxMb} MB for reliable processing.`,
-    );
-  }
-}
-
 export async function processTool(
   toolId: ClientToolId,
   files: File[],
@@ -435,18 +508,264 @@ export async function processTool(
   onProgress: (progress: number, stage: string) => void,
 ): Promise<ProcessResult> {
   const tool = getTool(toolId);
-  if (files.length === 0) throw new Error("Choose a file first.");
-  enforceBrowserLimit(tool, files);
+  const acceptsTextOnly = tool.id === "txt-to-pdf" || tool.id === "text-case-converter" || tool.id === "word-counter";
+  if (!acceptsTextOnly && files.length === 0) throw new Error("Choose a file first.");
 
-  if (tool.category === "image") {
-    return processImageTool(tool, files, options, onProgress);
+  if (tool.category === "pdf") return processPdfTool(tool, files, options, onProgress);
+  if (tool.category === "document") return processDocumentTool(tool, files, options, onProgress);
+  if (tool.category === "video") return processVideoTool(tool, files, options, onProgress);
+  if (tool.id === "jpg-to-pdf" || tool.id === "png-to-pdf" || tool.id === "image-to-pdf") {
+    return processImagesToPdf(tool, files, onProgress);
+  }
+  if (tool.category === "image") return processImageTool(tool, files, options, onProgress);
+  return processWebAudioTool(tool, files, options, onProgress);
+}
+
+type FFmpegInstance = {
+  loaded: boolean;
+  load: (config?: Record<string, string>, options?: { signal?: AbortSignal }) => Promise<unknown>;
+  on: (event: "progress", callback: (event: { progress: number }) => void) => void;
+  off: (event: "progress", callback: (event: { progress: number }) => void) => void;
+  writeFile: (path: string, data: Uint8Array | string) => Promise<unknown>;
+  readFile: (path: string) => Promise<Uint8Array | string>;
+  deleteFile: (path: string) => Promise<unknown>;
+  exec: (args: string[], timeout?: number) => Promise<number>;
+};
+
+let ffmpegPromise: Promise<FFmpegInstance> | null = null;
+
+async function getFfmpeg(onProgress: (progress: number, stage: string) => void) {
+  if (ffmpegPromise) {
+    onProgress(16, "Loading media engine");
+    return ffmpegPromise;
   }
 
-  if (tool.engine === "web-audio") {
-    return processWebAudioTool(tool, files, options, onProgress);
+  ffmpegPromise = (async () => {
+    onProgress(8, "Loading media engine");
+    const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+    const ffmpeg = new FFmpeg() as FFmpegInstance;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 45000);
+    try {
+      await ffmpeg.load(
+        {
+          coreURL: ffmpegCoreUrl,
+          wasmURL: ffmpegCoreWasmUrl,
+        },
+        { signal: controller.signal },
+      );
+      onProgress(20, "Preparing file");
+      return ffmpeg;
+    } catch (error) {
+      ffmpegPromise = null;
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new Error("Media engine is taking longer than expected. Try a smaller file or reload.");
+      }
+      throw new Error("Media engine could not load. Use the retry button or reload the page.");
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  })();
+
+  return ffmpegPromise;
+}
+
+async function processVideoTool(
+  tool: ToolDefinition,
+  files: File[],
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+): Promise<ProcessResult> {
+  if (files.some((file) => file.size > 100 * 1024 * 1024)) {
+    throw new Error("Recommended maximum is 100 MB. Try a smaller video for browser processing.");
+  }
+  if (tool.id === "merge-videos" && files.length < 2) throw new Error("Choose at least two video files to merge.");
+
+  const ffmpeg = await getFfmpeg(onProgress);
+  const progressHandler = ({ progress }: { progress: number }) => {
+    onProgress(35 + Math.min(55, Math.round(Math.max(0, progress) * 55)), "Processing video");
+  };
+  ffmpeg.on("progress", progressHandler);
+
+  const writtenFiles: string[] = [];
+  try {
+    onProgress(24, "Preparing file");
+    const inputNames = await Promise.all(
+      files.map(async (file, index) => {
+        const inputName = `input-${index}.${videoExtension(file)}`;
+        await ffmpeg.writeFile(inputName, new Uint8Array(await file.arrayBuffer()));
+        writtenFiles.push(inputName);
+        return inputName;
+      }),
+    );
+
+    const start = Math.max(0, options.start ?? 0);
+    const duration = videoDurationOption(options, tool.id === "video-to-gif" ? 6 : 10);
+    const firstVideoExt = videoOutputExtension(files[0]);
+    let outputName = tool.outputName;
+    let mime = "video/mp4";
+    let args: string[];
+
+    if (tool.id === "video-to-mp3") {
+      outputName = "audio.mp3";
+      mime = "audio/mpeg";
+      args = ["-i", inputNames[0], "-vn", "-codec:a", "libmp3lame", "-q:a", "2", outputName];
+    } else if (tool.id === "mute-video") {
+      outputName = `muted.${firstVideoExt}`;
+      mime = firstVideoExt === "webm" ? "video/webm" : "video/mp4";
+      args = ["-i", inputNames[0], "-c", "copy", "-an", outputName];
+    } else if (tool.id === "video-trimmer") {
+      outputName = `trimmed.${firstVideoExt}`;
+      mime = firstVideoExt === "webm" ? "video/webm" : "video/mp4";
+      args = ["-ss", String(start), "-t", String(duration), "-i", inputNames[0], "-c", "copy", "-avoid_negative_ts", "make_zero", outputName];
+    } else if (tool.id === "video-to-gif") {
+      outputName = "video.gif";
+      mime = "image/gif";
+      args = [
+        "-ss",
+        String(start),
+        "-t",
+        String(Math.min(duration, 12)),
+        "-i",
+        inputNames[0],
+        "-vf",
+        "fps=10,scale=480:-1:flags=lanczos",
+        "-loop",
+        "0",
+        outputName,
+      ];
+    } else if (tool.id === "extract-frames") {
+      outputName = "frame.jpg";
+      mime = "image/jpeg";
+      args = ["-ss", String(start), "-i", inputNames[0], "-frames:v", "1", "-q:v", "2", outputName];
+    } else if (tool.id === "merge-videos") {
+      outputName = `merged.${firstVideoExt}`;
+      mime = firstVideoExt === "webm" ? "video/webm" : "video/mp4";
+      const listFile = inputNames.map((name) => `file '${name}'`).join("\n");
+      await ffmpeg.writeFile("merge-list.txt", listFile);
+      writtenFiles.push("merge-list.txt");
+      args = ["-f", "concat", "-safe", "0", "-i", "merge-list.txt", "-c", "copy", outputName];
+    } else {
+      throw new Error("This video tool is not available.");
+    }
+
+    onProgress(35, "Processing video");
+    const exitCode = await ffmpeg.exec(args, 120000);
+    if (exitCode !== 0) throw new Error(videoFailureMessage(tool.id));
+
+    onProgress(94, "Creating download");
+    const data = await ffmpeg.readFile(outputName);
+    writtenFiles.push(outputName);
+    const blob = new Blob([fileDataToUint8Array(data)], { type: mime });
+    onProgress(100, "Done");
+    return { blob, filename: outputName, previewUrl: URL.createObjectURL(blob), mime };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Media engine")) throw error;
+    throw new Error(error instanceof Error && error.message ? error.message : videoFailureMessage(tool.id));
+  } finally {
+    ffmpeg.off("progress", progressHandler);
+    await Promise.allSettled(writtenFiles.map((name) => ffmpeg.deleteFile(name)));
+  }
+}
+
+function videoDurationOption(options: ProcessOptions, fallback: number) {
+  const start = Math.max(0, options.start ?? 0);
+  if (typeof options.end === "number" && options.end > start) return Math.max(0.1, options.end - start);
+  return Math.max(0.1, options.duration ?? fallback);
+}
+
+function videoExtension(file: File) {
+  const nameExtension = file.name.split(".").pop()?.toLowerCase();
+  if (nameExtension === "webm" || nameExtension === "mov" || nameExtension === "mp4") return nameExtension;
+  if (file.type.includes("webm")) return "webm";
+  if (file.type.includes("quicktime")) return "mov";
+  return "mp4";
+}
+
+function videoOutputExtension(file: File) {
+  return videoExtension(file) === "webm" ? "webm" : "mp4";
+}
+
+function fileDataToUint8Array(data: Uint8Array | string) {
+  return typeof data === "string" ? new TextEncoder().encode(data) : data;
+}
+
+function videoFailureMessage(toolId: ClientToolId) {
+  if (toolId === "merge-videos") {
+    return "Browser merge requires matching video properties: same format, codec, resolution, dimensions, and stream layout. Try files exported from the same source/settings.";
+  }
+  if (toolId === "video-to-gif") {
+    return "GIF creation is heavy in the browser. Try a shorter clip, lower duration, or smaller file.";
+  }
+  return "Video processing failed in the browser. Try a smaller file or a video with a common MP4/WebM format.";
+}
+
+async function processDocumentTool(
+  tool: ToolDefinition,
+  files: File[],
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+): Promise<ProcessResult> {
+  onProgress(10, "Preparing file");
+
+  if (tool.id === "txt-to-pdf") return textToPdf(tool, files[0], options, onProgress);
+
+  if (tool.id === "docx-to-text" || tool.id === "docx-to-html") {
+    const mammoth = await import("mammoth/mammoth.browser");
+    onProgress(45, "Processing in browser");
+    const arrayBuffer = await files[0].arrayBuffer();
+    if (tool.id === "docx-to-html") {
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const html = `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Converted DOCX</title></head>
+<body>
+${result.value}
+</body>
+</html>
+`;
+      return textResult(tool, html, "text/html", onProgress);
+    }
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return textResult(tool, result.value.trim(), "text/plain", onProgress);
   }
 
-  return processFfmpegTool(tool, files, options, onProgress);
+  if (tool.id === "text-case-converter") {
+    const input = await readTextInput(files[0], options);
+    const mode = textCaseMode(options.text);
+    const output =
+      mode === "lowercase"
+        ? input.toLowerCase()
+        : mode === "title"
+          ? toTitleCase(input)
+          : mode === "sentence"
+            ? toSentenceCase(input)
+            : input.toUpperCase();
+    return textResult(tool, output, "text/plain", onProgress);
+  }
+
+  if (tool.id === "word-counter") {
+    const input = await readTextInput(files[0], options);
+    const words = input.trim() ? input.trim().split(/\s+/).length : 0;
+    const characters = input.length;
+    const charactersNoSpaces = input.replace(/\s/g, "").length;
+    const sentences = input.trim() ? input.split(/[.!?]+/).filter((part) => part.trim()).length : 0;
+    const paragraphs = input.trim() ? input.split(/\n\s*\n/).filter((part) => part.trim()).length : 0;
+    const output = [
+      `Words: ${words}`,
+      `Characters: ${characters}`,
+      `Characters without spaces: ${charactersNoSpaces}`,
+      `Sentences: ${sentences}`,
+      `Paragraphs: ${paragraphs}`,
+    ].join("\n");
+    return textResult(tool, output, "text/plain", onProgress);
+  }
+
+  throw new Error("This document tool is not available.");
+}
+
+function textCaseMode(value?: string) {
+  return value === "lowercase" || value === "title" || value === "sentence" ? value : "uppercase";
 }
 
 export function downloadBlob(blob: Blob, filename: string) {
@@ -458,156 +777,210 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-async function loadFfmpeg(onProgress: (progress: number, stage: string) => void) {
-  if (!ffmpegPromise) {
-    ffmpegPromise = (async () => {
-      const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-      const ffmpeg = new FFmpeg();
-      ffmpeg.on("log", ({ message }) => {
-        console.debug("[ffmpeg]", message);
-      });
-      ffmpeg.on("progress", ({ progress }) => {
-        onProgress(Math.min(98, Math.max(25, Math.round(25 + progress * 73))), "Processing in browser");
-      });
-      onProgress(4, "Preparing file");
-      const wasmURL = `/ffmpeg/ffmpeg-core.wasm?v=${FFMPEG_CORE_VERSION}`;
-      onProgress(23, "Preparing file");
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 90_000);
-      try {
-        await ffmpeg.load(
-          {
-            coreURL: `/ffmpeg/ffmpeg-core.js?v=${FFMPEG_CORE_VERSION}`,
-            wasmURL,
-          },
-          { signal: controller.signal },
-        );
-      } catch (error) {
-        console.error("Could not load browser media tools", error);
-        ffmpegPromise = null;
-        throw new Error(
-          `The browser could not prepare the private media tools. ${
-            error instanceof Error ? error.message : "Refresh the page or try a smaller file."
-          }`,
-        );
-      } finally {
-        window.clearTimeout(timeout);
-      }
-      onProgress(24, "Preparing file");
-      return ffmpeg;
-    })();
-  }
-  return ffmpegPromise;
-}
-
-async function processFfmpegTool(
+async function processPdfTool(
   tool: ToolDefinition,
   files: File[],
   options: ProcessOptions,
   onProgress: (progress: number, stage: string) => void,
 ): Promise<ProcessResult> {
-  const ffmpeg = await loadFfmpeg(onProgress);
-  const { fetchFile } = await import("@ffmpeg/util");
-  onProgress(25, "Preparing file");
-  const inputNames = await writeFiles(ffmpeg, files, fetchFile);
-  const input = inputNames[0];
-  const output = tool.outputName;
-  const start = String(options.start ?? 0);
-  const duration = String(options.duration ?? 10);
-  const width = String(options.width ?? 720);
-  const speed = clamp(options.speed ?? 1, 0.5, 2);
-  const volume = clamp(options.volume ?? 1.5, 0.25, 3);
+  onProgress(10, "Preparing file");
 
-  if (tool.id === "merge-videos" || tool.id === "audio-merger") {
-    const list = inputNames.map((name) => `file '${name}'`).join("\n");
-    await ffmpeg.writeFile("inputs.txt", list);
-  }
+  if (tool.id === "merge-pdf") return mergePdfs(tool, files, onProgress);
+  if (tool.id === "split-pdf") return splitPdf(tool, files[0], options, onProgress);
+  if (tool.id === "rotate-pdf") return rotatePdf(tool, files[0], options, onProgress);
+  if (tool.id === "add-watermark-pdf") return watermarkPdf(tool, files[0], options, onProgress);
+  if (tool.id === "pdf-to-jpg") return pdfToJpg(tool, files[0], onProgress);
+  if (tool.id === "txt-to-pdf") return textToPdf(tool, files[0], options, onProgress);
+  if (tool.id === "jpg-to-pdf" || tool.id === "png-to-pdf") return processImagesToPdf(tool, files, onProgress);
 
-  const commandMap: Record<string, string[]> = {
-    "video-to-mp3": ["-i", input, "-vn", "-b:a", "192k", output],
-    "video-to-gif": [
-      "-i",
-      input,
-      "-t",
-      String(Math.min(Number(duration), 12)),
-      "-vf",
-      "fps=12,scale=480:-1:flags=lanczos",
-      output,
-    ],
-    "video-compressor": [
-      "-i",
-      input,
-      "-vf",
-      "scale='min(1280,iw)':-2",
-      "-c:v",
-      "libx264",
-      "-crf",
-      String(options.quality ?? 30),
-      "-preset",
-      "veryfast",
-      "-c:a",
-      "aac",
-      "-b:a",
-      "96k",
-      output,
-    ],
-    "video-trimmer": ["-ss", start, "-i", input, "-t", duration, "-c", "copy", output],
-    "merge-videos": ["-f", "concat", "-safe", "0", "-i", "inputs.txt", "-c", "copy", output],
-    "extract-frames": ["-ss", start, "-i", input, "-frames:v", "1", "-q:v", "2", output],
-    "resize-video": ["-i", input, "-vf", `scale=${width}:-2`, "-c:a", "copy", output],
-    "mute-video": ["-i", input, "-an", "-c:v", "copy", output],
-    "change-video-speed": [
-      "-i",
-      input,
-      "-filter_complex",
-      `[0:v]setpts=${(1 / speed).toFixed(3)}*PTS[v];[0:a]atempo=${speed.toFixed(2)}[a]`,
-      "-map",
-      "[v]",
-      "-map",
-      "[a]",
-      output,
-    ],
-    "mp3-cutter": ["-ss", start, "-i", input, "-t", duration, "-b:a", "192k", output],
-    "audio-compressor": ["-i", input, "-b:a", "96k", output],
-    "audio-merger": ["-f", "concat", "-safe", "0", "-i", "inputs.txt", "-b:a", "192k", output],
-    "wav-to-mp3": ["-i", input, "-b:a", "192k", output],
-    "mp3-to-wav": ["-i", input, output],
-    "volume-booster": ["-i", input, "-filter:a", `volume=${volume}`, output],
-    "reverse-audio": ["-i", input, "-filter_complex", "areverse", output],
-    "audio-trimmer": ["-ss", start, "-i", input, "-t", duration, "-b:a", "192k", output],
-    "change-audio-speed": ["-i", input, "-filter:a", `atempo=${speed.toFixed(2)}`, output],
-  };
-
-  const command = commandMap[tool.id];
-  if (!command) throw new Error("This tool is not available yet.");
-
-  onProgress(30, "Processing in browser");
-  const exitCode = await ffmpeg.exec(command, 120_000);
-  if (exitCode !== 0) {
-    throw new Error("Processing took too long or failed in this browser. Try a smaller file.");
-  }
-  onProgress(96, "Creating download");
-  const data = await ffmpeg.readFile(output);
-  const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
-  const mime = mimeForOutput(output);
-  const blob = new Blob([bytes], { type: mime });
-  onProgress(100, "Done");
-  return { blob, filename: output, previewUrl: URL.createObjectURL(blob), mime };
+  throw new Error("This PDF tool is not available.");
 }
 
-async function writeFiles(
-  ffmpeg: FFmpeg,
+async function mergePdfs(
+  tool: ToolDefinition,
   files: File[],
-  fetchFile: (file: File) => Promise<Uint8Array>,
+  onProgress: (progress: number, stage: string) => void,
 ) {
-  const names: string[] = [];
+  if (files.length < 2) throw new Error("Choose at least two PDF files to merge.");
+  const output = await PDFDocument.create();
   for (const [index, file] of files.entries()) {
-    const extension = extensionFor(file.name, file.type);
-    const name = `input-${index}.${extension}`;
-    await ffmpeg.writeFile(name, await fetchFile(file));
-    names.push(name);
+    onProgress(20 + Math.round((index / files.length) * 60), "Processing in browser");
+    const source = await PDFDocument.load(await file.arrayBuffer());
+    const pages = await output.copyPages(source, source.getPageIndices());
+    pages.forEach((page) => output.addPage(page));
   }
-  return names;
+  return pdfResult(tool, await output.save(), onProgress);
+}
+
+async function splitPdf(
+  tool: ToolDefinition,
+  file: File,
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+) {
+  const source = await PDFDocument.load(await file.arrayBuffer());
+  const output = await PDFDocument.create();
+  const pages = parsePageRange(options.pageRange, source.getPageCount());
+  if (pages.length === 0) throw new Error("Enter a valid page range, like 1-3 or 1,3,5.");
+  onProgress(45, "Processing in browser");
+  const copied = await output.copyPages(source, pages.map((page) => page - 1));
+  copied.forEach((page) => output.addPage(page));
+  return pdfResult(tool, await output.save(), onProgress);
+}
+
+async function rotatePdf(
+  tool: ToolDefinition,
+  file: File,
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+) {
+  const pdf = await PDFDocument.load(await file.arrayBuffer());
+  const angle = options.rotation ?? 90;
+  onProgress(45, "Processing in browser");
+  pdf.getPages().forEach((page) => {
+    const current = page.getRotation().angle;
+    page.setRotation(degrees((current + angle) % 360));
+  });
+  return pdfResult(tool, await pdf.save(), onProgress);
+}
+
+async function watermarkPdf(
+  tool: ToolDefinition,
+  file: File,
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+) {
+  const pdf = await PDFDocument.load(await file.arrayBuffer());
+  const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const text = options.watermark || options.text || "CreatorKitTools";
+  onProgress(45, "Processing in browser");
+  for (const page of pdf.getPages()) {
+    const { width, height } = page.getSize();
+    page.drawText(text, {
+      x: width * 0.16,
+      y: height * 0.48,
+      size: Math.max(24, Math.min(width, height) * 0.08),
+      font,
+      color: rgb(0.35, 0.35, 0.35),
+      opacity: 0.22,
+      rotate: degrees(-35),
+    });
+  }
+  return pdfResult(tool, await pdf.save(), onProgress);
+}
+
+async function pdfToJpg(
+  tool: ToolDefinition,
+  file: File,
+  onProgress: (progress: number, stage: string) => void,
+) {
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.mjs", import.meta.url).toString();
+  const document = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  const zip = new JSZip();
+
+  for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+    onProgress(15 + Math.round((pageNumber / document.numPages) * 75), "Processing in browser");
+    const page = await document.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = window.document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas is not supported in this browser.");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: context, viewport, canvas }).promise;
+    const blob = await canvasToBlob(canvas, "image/jpeg", 0.9);
+    zip.file(`page-${String(pageNumber).padStart(2, "0")}.jpg`, blob);
+  }
+
+  onProgress(96, "Creating download");
+  const blob = await zip.generateAsync({ type: "blob" });
+  onProgress(100, "Done");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "application/zip" };
+}
+
+async function textToPdf(
+  tool: ToolDefinition,
+  file: File | undefined,
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+) {
+  const text = file ? await file.text() : options.text || "";
+  if (!text.trim()) throw new Error("Paste text or upload a TXT file first.");
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 48;
+  const lines = pdf.splitTextToSize(text, pdf.internal.pageSize.getWidth() - margin * 2) as string[];
+  let y = margin;
+  onProgress(50, "Processing in browser");
+  for (const line of lines) {
+    if (y > pdf.internal.pageSize.getHeight() - margin) {
+      pdf.addPage();
+      y = margin;
+    }
+    pdf.text(line, margin, y);
+    y += 16;
+  }
+  onProgress(100, "Done");
+  const blob = pdf.output("blob");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "application/pdf" };
+}
+
+async function readTextInput(file: File | undefined, options: ProcessOptions) {
+  const text = file ? await file.text() : options.bottomText || "";
+  if (!text.trim()) throw new Error("Paste text or upload a text file first.");
+  return text;
+}
+
+function textResult(
+  tool: ToolDefinition,
+  text: string,
+  mime: string,
+  onProgress: (progress: number, stage: string) => void,
+): ProcessResult {
+  onProgress(96, "Creating download");
+  const blob = new Blob([text], { type: mime });
+  onProgress(100, "Done");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime, text };
+}
+
+function toTitleCase(value: string) {
+  return value.toLowerCase().replace(/\b[\p{L}\p{N}]/gu, (letter) => letter.toUpperCase());
+}
+
+function toSentenceCase(value: string) {
+  const lower = value.toLowerCase();
+  return lower.replace(/(^\s*[a-z])|([.!?]\s+[a-z])/g, (match) => match.toUpperCase());
+}
+
+function pdfResult(tool: ToolDefinition, bytes: Uint8Array, onProgress: (progress: number, stage: string) => void) {
+  onProgress(96, "Creating download");
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  onProgress(100, "Done");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "application/pdf" };
+}
+
+async function processImagesToPdf(
+  tool: ToolDefinition,
+  files: File[],
+  onProgress: (progress: number, stage: string) => void,
+): Promise<ProcessResult> {
+  onProgress(10, "Preparing file");
+  const pdf = new jsPDF({ unit: "px", format: "a4" });
+  for (const [index, file] of files.entries()) {
+    onProgress(15 + Math.round((index / files.length) * 75), "Processing in browser");
+    const image = await loadImage(file);
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const scale = Math.min(pageWidth / image.width, pageHeight / image.height);
+    const width = image.width * scale;
+    const height = image.height * scale;
+    if (index > 0) pdf.addPage();
+    pdf.addImage(image, file.type.includes("png") ? "PNG" : "JPEG", (pageWidth - width) / 2, (pageHeight - height) / 2, width, height);
+  }
+  onProgress(96, "Creating download");
+  const blob = pdf.output("blob");
+  onProgress(100, "Done");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "application/pdf" };
 }
 
 async function processWebAudioTool(
@@ -627,32 +1000,114 @@ async function processWebAudioTool(
   onProgress(35, "Processing in browser");
   let output: AudioBuffer;
 
-  if (tool.id === "audio-merger") {
-    output = mergeAudioBuffers(buffers);
-  } else if (tool.id === "mp3-cutter" || tool.id === "audio-trimmer") {
-    output = sliceAudioBuffer(input, startSeconds, durationSeconds);
-  } else if (tool.id === "volume-booster") {
-    output = transformAudioBuffer(input, (sample) => clamp(sample * volume, -1, 1));
-  } else if (tool.id === "reverse-audio") {
-    output = reverseAudioBuffer(input);
-  } else if (tool.id === "change-audio-speed") {
-    output = await renderAudioSpeed(input, speed);
-  } else if (tool.id === "mp3-to-wav") {
-    output = input;
-  } else {
-    throw new Error("This audio tool needs the beta media engine.");
-  }
+  if (tool.id === "audio-merger") output = mergeAudioBuffers(buffers);
+  else if (tool.id === "mp3-cutter" || tool.id === "audio-trimmer") output = sliceAudioBuffer(input, startSeconds, durationSeconds);
+  else if (tool.id === "volume-booster") output = transformAudioBuffer(input, (sample) => clamp(sample * volume, -1, 1));
+  else if (tool.id === "reverse-audio") output = reverseAudioBuffer(input);
+  else if (tool.id === "change-audio-speed") output = await renderAudioSpeed(input, speed);
+  else throw new Error("This audio tool is not available.");
 
   onProgress(96, "Creating download");
   const blob = encodeWav(output);
   onProgress(100, "Done");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "audio/wav" };
+}
 
-  return {
-    blob,
-    filename: tool.outputName.endsWith(".wav") ? tool.outputName : tool.outputName.replace(/\.[^.]+$/, ".wav"),
-    previewUrl: URL.createObjectURL(blob),
-    mime: "audio/wav",
-  };
+async function processImageTool(
+  tool: ToolDefinition,
+  files: File[],
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+): Promise<ProcessResult> {
+  onProgress(10, "Preparing file");
+  const image = await loadImage(files[0]);
+  onProgress(35, "Processing in browser");
+  const canvas = window.document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas is not supported in this browser.");
+
+  const width = options.width || image.width;
+  const height = options.height || Math.round((image.height / image.width) * width);
+  canvas.width = width;
+  canvas.height = height;
+
+  if (tool.id === "crop-image") {
+    const size = Math.min(image.width, image.height);
+    context.drawImage(image, (image.width - size) / 2, (image.height - size) / 2, size, size, 0, 0, width, height);
+  } else {
+    if (tool.id === "blur-image") context.filter = `blur(${options.blur ?? 6}px)`;
+    context.drawImage(image, 0, 0, width, height);
+  }
+
+  if (tool.id === "meme-maker") {
+    drawMemeText(context, canvas.width, options.text || "TOP TEXT", 44);
+    drawMemeText(context, canvas.width, options.bottomText || "BOTTOM TEXT", canvas.height - 28);
+  }
+
+  if (tool.id === "add-watermark") {
+    context.filter = "none";
+    context.font = "600 28px Inter, Arial";
+    context.fillStyle = "rgba(255,255,255,.85)";
+    context.strokeStyle = "rgba(0,0,0,.55)";
+    context.lineWidth = 4;
+    const text = options.watermark || "CreatorKitTools";
+    const x = canvas.width - context.measureText(text).width - 28;
+    const y = canvas.height - 28;
+    context.strokeText(text, x, y);
+    context.fillText(text, x, y);
+  }
+
+  const mime = tool.id === "png-to-jpg" || tool.id === "image-compressor" ? "image/jpeg" : "image/png";
+  const quality = (options.quality ?? 82) / 100;
+  const blob = await canvasToBlob(canvas, mime, quality);
+  onProgress(96, "Creating download");
+  onProgress(100, "Done");
+  return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime };
+}
+
+function parsePageRange(range: string | undefined, pageCount: number) {
+  if (!range?.trim()) return Array.from({ length: pageCount }, (_, index) => index + 1);
+  const pages = new Set<number>();
+  for (const part of range.split(",")) {
+    const trimmed = part.trim();
+    const match = trimmed.match(/^(\d+)(?:-(\d+))?$/);
+    if (!match) continue;
+    const start = Number(match[1]);
+    const end = Number(match[2] ?? match[1]);
+    for (let page = Math.min(start, end); page <= Math.max(start, end); page += 1) {
+      if (page >= 1 && page <= pageCount) pages.add(page);
+    }
+  }
+  return [...pages].sort((a, b) => a - b);
+}
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Could not load image."));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, mime: string, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("Could not export file."));
+    }, mime, quality);
+  });
+}
+
+function drawMemeText(context: CanvasRenderingContext2D, width: number, text: string, y: number) {
+  context.filter = "none";
+  context.font = "800 36px Impact, Arial Black, sans-serif";
+  context.textAlign = "center";
+  context.fillStyle = "white";
+  context.strokeStyle = "black";
+  context.lineWidth = 6;
+  context.strokeText(text.toUpperCase(), width / 2, y);
+  context.fillText(text.toUpperCase(), width / 2, y);
 }
 
 async function decodeAudioFile(file: File) {
@@ -677,39 +1132,29 @@ function sliceAudioBuffer(buffer: AudioBuffer, startSeconds: number, durationSec
   const startFrame = Math.min(buffer.length, Math.floor(startSeconds * buffer.sampleRate));
   const frameCount = Math.max(1, Math.min(buffer.length - startFrame, Math.floor(durationSeconds * buffer.sampleRate)));
   const output = createAudioBuffer(buffer.numberOfChannels, frameCount, buffer.sampleRate);
-
   for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
     output.copyToChannel(buffer.getChannelData(channel).slice(startFrame, startFrame + frameCount), channel);
   }
-
   return output;
 }
 
 function transformAudioBuffer(buffer: AudioBuffer, transform: (sample: number) => number) {
   const output = createAudioBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
-
   for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
     const inputData = buffer.getChannelData(channel);
     const outputData = output.getChannelData(channel);
-    for (let index = 0; index < inputData.length; index += 1) {
-      outputData[index] = transform(inputData[index]);
-    }
+    for (let index = 0; index < inputData.length; index += 1) outputData[index] = transform(inputData[index]);
   }
-
   return output;
 }
 
 function reverseAudioBuffer(buffer: AudioBuffer) {
   const output = createAudioBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
-
   for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
     const inputData = buffer.getChannelData(channel);
     const outputData = output.getChannelData(channel);
-    for (let index = 0; index < inputData.length; index += 1) {
-      outputData[index] = inputData[inputData.length - index - 1];
-    }
+    for (let index = 0; index < inputData.length; index += 1) outputData[index] = inputData[inputData.length - index - 1];
   }
-
   return output;
 }
 
@@ -719,7 +1164,6 @@ function mergeAudioBuffers(buffers: AudioBuffer[]) {
   const length = buffers.reduce((sum, buffer) => sum + Math.round(buffer.duration * sampleRate), 0);
   const output = createAudioBuffer(channels, length, sampleRate);
   let offset = 0;
-
   for (const buffer of buffers) {
     const frameCount = Math.round(buffer.duration * sampleRate);
     for (let channel = 0; channel < channels; channel += 1) {
@@ -728,7 +1172,6 @@ function mergeAudioBuffers(buffers: AudioBuffer[]) {
     }
     offset += frameCount;
   }
-
   return output;
 }
 
@@ -750,7 +1193,6 @@ function encodeWav(buffer: AudioBuffer) {
   const dataLength = buffer.length * blockAlign;
   const arrayBuffer = new ArrayBuffer(44 + dataLength);
   const view = new DataView(arrayBuffer);
-
   writeString(view, 0, "RIFF");
   view.setUint32(4, 36 + dataLength, true);
   writeString(view, 8, "WAVE");
@@ -764,7 +1206,6 @@ function encodeWav(buffer: AudioBuffer) {
   view.setUint16(34, 16, true);
   writeString(view, 36, "data");
   view.setUint32(40, dataLength, true);
-
   const channelData = Array.from({ length: channels }, (_, channel) => buffer.getChannelData(channel));
   let offset = 44;
   for (let index = 0; index < buffer.length; index += 1) {
@@ -774,147 +1215,11 @@ function encodeWav(buffer: AudioBuffer) {
       offset += bytesPerSample;
     }
   }
-
   return new Blob([arrayBuffer], { type: "audio/wav" });
 }
 
 function writeString(view: DataView, offset: number, value: string) {
-  for (let index = 0; index < value.length; index += 1) {
-    view.setUint8(offset + index, value.charCodeAt(index));
-  }
-}
-
-async function processImageTool(
-  tool: ToolDefinition,
-  files: File[],
-  options: ProcessOptions,
-  onProgress: (progress: number, stage: string) => void,
-): Promise<ProcessResult> {
-  onProgress(10, "Preparing file");
-  if (tool.id === "image-to-pdf") {
-    const pdf = new jsPDF({ unit: "px", format: "a4" });
-    for (const [index, file] of files.entries()) {
-      const image = await loadImage(file);
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const scale = Math.min(pageWidth / image.width, pageHeight / image.height);
-      const width = image.width * scale;
-      const height = image.height * scale;
-      if (index > 0) pdf.addPage();
-      pdf.addImage(image, "JPEG", (pageWidth - width) / 2, (pageHeight - height) / 2, width, height);
-    }
-    const blob = pdf.output("blob");
-    onProgress(96, "Creating download");
-    onProgress(100, "Done");
-    return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime: "application/pdf" };
-  }
-
-  const image = await loadImage(files[0]);
-  onProgress(35, "Processing in browser");
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Canvas is not supported in this browser.");
-
-  const width = options.width || image.width;
-  const height = options.height || Math.round((image.height / image.width) * width);
-  canvas.width = width;
-  canvas.height = height;
-
-  if (tool.id === "crop-image") {
-    const size = Math.min(image.width, image.height);
-    context.drawImage(
-      image,
-      (image.width - size) / 2,
-      (image.height - size) / 2,
-      size,
-      size,
-      0,
-      0,
-      width,
-      height,
-    );
-  } else {
-    if (tool.id === "blur-image") context.filter = `blur(${options.blur ?? 6}px)`;
-    context.drawImage(image, 0, 0, width, height);
-  }
-
-  if (tool.id === "meme-maker") {
-    drawMemeText(context, canvas.width, options.text || "TOP TEXT", 44);
-    drawMemeText(context, canvas.width, options.bottomText || "BOTTOM TEXT", canvas.height - 28);
-  }
-
-  if (tool.id === "add-watermark") {
-    context.filter = "none";
-    context.font = "600 28px Inter, Arial";
-    context.fillStyle = "rgba(255,255,255,.85)";
-    context.strokeStyle = "rgba(0,0,0,.55)";
-    context.lineWidth = 4;
-    const text = options.watermark || "Video Aid";
-    const x = canvas.width - context.measureText(text).width - 28;
-    const y = canvas.height - 28;
-    context.strokeText(text, x, y);
-    context.fillText(text, x, y);
-  }
-
-  const mime = tool.id === "png-to-jpg" || tool.id === "image-compressor" ? "image/jpeg" : "image/png";
-  const quality = (options.quality ?? 82) / 100;
-  const blob = await canvasToBlob(canvas, mime, quality);
-  onProgress(96, "Creating download");
-  onProgress(100, "Done");
-  return {
-    blob,
-    filename: tool.outputName,
-    previewUrl: URL.createObjectURL(blob),
-    mime,
-  };
-}
-
-function drawMemeText(context: CanvasRenderingContext2D, width: number, text: string, y: number) {
-  context.filter = "none";
-  context.font = "800 36px Impact, Arial Black, sans-serif";
-  context.textAlign = "center";
-  context.fillStyle = "white";
-  context.strokeStyle = "black";
-  context.lineWidth = 6;
-  context.strokeText(text.toUpperCase(), width / 2, y);
-  context.fillText(text.toUpperCase(), width / 2, y);
-}
-
-function loadImage(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Could not load image."));
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, mime: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("Could not export image."));
-    }, mime, quality);
-  });
-}
-
-function extensionFor(name: string, type: string) {
-  const found = name.match(/\.([a-z0-9]+)$/i)?.[1];
-  if (found) return found.toLowerCase();
-  if (type.includes("mp4")) return "mp4";
-  if (type.includes("mpeg")) return "mp3";
-  if (type.includes("wav")) return "wav";
-  return "bin";
-}
-
-function mimeForOutput(filename: string) {
-  if (filename.endsWith(".mp3")) return "audio/mpeg";
-  if (filename.endsWith(".wav")) return "audio/wav";
-  if (filename.endsWith(".gif")) return "image/gif";
-  if (filename.endsWith(".jpg")) return "image/jpeg";
-  if (filename.endsWith(".png")) return "image/png";
-  if (filename.endsWith(".pdf")) return "application/pdf";
-  return "video/mp4";
+  for (let index = 0; index < value.length; index += 1) view.setUint8(offset + index, value.charCodeAt(index));
 }
 
 function clamp(value: number, min: number, max: number) {

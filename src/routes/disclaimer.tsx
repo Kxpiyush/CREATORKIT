@@ -31,7 +31,7 @@ function Disclaimer() {
         },
         {
           title: "Large files",
-          body: "Large images, audio files, and videos may process slowly, fail, or require a desktop browser with more memory. Beta video tools are especially device-dependent.",
+          body: "Large images, PDFs, DOCX files, and audio files may process slowly, fail, or require a desktop browser with more memory.",
         },
         {
           title: "User verification",

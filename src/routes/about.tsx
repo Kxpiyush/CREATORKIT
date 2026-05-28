@@ -5,12 +5,12 @@ import { LegalPage } from "@/components/site/LegalPage";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Creator Kit - Browser-Based Creator Tools" },
+      { title: "About CreatorKitTools - Browser-Based File Tools" },
       {
         name: "description",
-        content: "Learn about Creator Kit's privacy-first, browser-based media tools for images, audio, and video.",
+        content: "Learn about CreatorKitTools privacy-first, browser-based tools for images, PDFs, and audio.",
       },
-      { property: "og:title", content: "About Creator Kit" },
+      { property: "og:title", content: "About CreatorKitTools" },
       {
         property: "og:description",
         content: "Creator Kit provides lightweight free creator tools that process files locally in your browser.",
@@ -24,12 +24,12 @@ export const Route = createFileRoute("/about")({
 function About() {
   return (
     <LegalPage
-      title="About Creator Kit"
-      description="Creator Kit is a lightweight utility website for common image, audio, and video tasks."
+      title="About CreatorKitTools"
+      description="CreatorKitTools is a lightweight utility website for common image, PDF, and audio tasks."
       sections={[
         {
           title: "Browser-based processing",
-          body: "The tools run in your browser using local browser capabilities whenever possible. This keeps the experience fast for common image and audio tasks.",
+          body: "The tools run in your browser using local browser capabilities and free open-source libraries. This keeps the experience private for common image, PDF, and audio tasks.",
         },
         {
           title: "Privacy-first philosophy",
@@ -41,7 +41,7 @@ function About() {
         },
         {
           title: "Free creator tools",
-          body: "The site focuses on practical utilities such as image compression, format conversion, resizing, cropping, audio trimming, and beta video tools.",
+          body: "The site focuses only on practical utilities that can work without a backend, such as image compression, format conversion, PDF merging, PDF splitting, PDF rotation, text-to-PDF conversion, and audio trimming.",
         },
       ]}
     />

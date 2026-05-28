@@ -9,8 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VideoToMp3RouteImport } from './routes/video-to-mp3'
-import { Route as VideoToGifRouteImport } from './routes/video-to-gif'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResizeImageRouteImport } from './routes/resize-image'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -25,16 +23,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ToolIdRouteImport } from './routes/$toolId'
 import { Route as IndexRouteImport } from './routes/index'
 
-const VideoToMp3Route = VideoToMp3RouteImport.update({
-  id: '/video-to-mp3',
-  path: '/video-to-mp3',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VideoToGifRoute = VideoToGifRouteImport.update({
-  id: '/video-to-gif',
-  path: '/video-to-gif',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -115,8 +103,6 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
-  '/video-to-gif': typeof VideoToGifRoute
-  '/video-to-mp3': typeof VideoToMp3Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -132,8 +118,6 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
-  '/video-to-gif': typeof VideoToGifRoute
-  '/video-to-mp3': typeof VideoToMp3Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -150,8 +134,6 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
-  '/video-to-gif': typeof VideoToGifRoute
-  '/video-to-mp3': typeof VideoToMp3Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,8 +151,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
-    | '/video-to-gif'
-    | '/video-to-mp3'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,8 +166,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
-    | '/video-to-gif'
-    | '/video-to-mp3'
   id:
     | '__root__'
     | '/'
@@ -203,8 +181,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
-    | '/video-to-gif'
-    | '/video-to-mp3'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -221,26 +197,10 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResizeImageRoute: typeof ResizeImageRoute
   TermsRoute: typeof TermsRoute
-  VideoToGifRoute: typeof VideoToGifRoute
-  VideoToMp3Route: typeof VideoToMp3Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/video-to-mp3': {
-      id: '/video-to-mp3'
-      path: '/video-to-mp3'
-      fullPath: '/video-to-mp3'
-      preLoaderRoute: typeof VideoToMp3RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/video-to-gif': {
-      id: '/video-to-gif'
-      path: '/video-to-gif'
-      fullPath: '/video-to-gif'
-      preLoaderRoute: typeof VideoToGifRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -349,8 +309,6 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResizeImageRoute: ResizeImageRoute,
   TermsRoute: TermsRoute,
-  VideoToGifRoute: VideoToGifRoute,
-  VideoToMp3Route: VideoToMp3Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
