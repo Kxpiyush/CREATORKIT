@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 const GA_MEASUREMENT_ID = "G-78QFQBWNC7";
 const CLARITY_PROJECT_ID = "wvy8jka5nd";
+const ADSENSE_CLIENT_ID = "ca-pub-3044097605861941";
 
 declare global {
   interface Window {
@@ -134,6 +135,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+          crossOrigin="anonymous"
+        />
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
         <script
           dangerouslySetInnerHTML={{
