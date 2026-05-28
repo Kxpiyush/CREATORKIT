@@ -56,6 +56,13 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
     setSelectedTool(toolId);
   }, [toolId]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const canonicalUrl = `https://creatorkittools.com${getToolPath(tool.id)}`;
+    upsertHeadLink("canonical", canonicalUrl);
+    upsertMetaProperty("og:url", canonicalUrl);
+  }, [tool.id]);
+
   const resetWorkspace = () => {
     setFiles([]);
     setResult(null);
@@ -625,6 +632,22 @@ function textOnlyValue(toolId: ClientToolId, options: ProcessOptions) {
 
 function textCaseMode(value?: string) {
   return value === "lowercase" || value === "title" || value === "sentence" ? value : "uppercase";
+}
+
+function upsertHeadLink(rel: string, href: string) {
+  const existing = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  const link = existing ?? document.createElement("link");
+  link.rel = rel;
+  link.href = href;
+  if (!existing) document.head.appendChild(link);
+}
+
+function upsertMetaProperty(property: string, content: string) {
+  const existing = document.head.querySelector<HTMLMetaElement>(`meta[property="${property}"]`);
+  const meta = existing ?? document.createElement("meta");
+  meta.setAttribute("property", property);
+  meta.content = content;
+  if (!existing) document.head.appendChild(meta);
 }
 
 function FAQ({ toolTitle }: { toolTitle: string }) {
