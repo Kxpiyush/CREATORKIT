@@ -13,6 +13,7 @@ import {
   downloadBlob,
   getTool,
   getToolPath,
+  isTextInputTool,
   processTool,
 } from "@/lib/client-tools";
 import { cn } from "@/lib/utils";
@@ -149,7 +150,7 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
                   Tool categories
                 </h2>
                 <div className="grid gap-2">
-                {(["image", "pdf", "document", "audio", "video"] as const).map((category) => (
+                {(["image", "pdf", "document", "audio", "video", "youtube", "social", "text"] as const).map((category) => (
                     <a
                       key={category}
                       href={`#${category}`}
@@ -186,14 +187,16 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
             </aside>
 
             <div className="space-y-6">
-              <UploadPanel
-                key={tool.id}
-                toolId={tool.id}
-                accept={tool.accept}
-                multiple={tool.multiple}
-                files={files}
-                onFiles={handleFiles}
-              />
+              {tool.accept && (
+                <UploadPanel
+                  key={tool.id}
+                  toolId={tool.id}
+                  accept={tool.accept}
+                  multiple={tool.multiple}
+                  files={files}
+                  onFiles={handleFiles}
+                />
+              )}
               {tool.category === "video" && <VideoWarning />}
               <Controls toolId={tool.id} options={options} setOptions={setOptions} />
 
@@ -273,6 +276,9 @@ function TopBar() {
           <a href="#document" className="hover:text-foreground">Document</a>
           <a href="#audio" className="hover:text-foreground">Audio</a>
           <a href="#video" className="hover:text-foreground">Video</a>
+          <a href="#youtube" className="hover:text-foreground">YouTube</a>
+          <a href="#social" className="hover:text-foreground">Social</a>
+          <a href="#text" className="hover:text-foreground">Text</a>
         </div>
       </div>
     </nav>
@@ -353,6 +359,7 @@ function Controls({
   const needsSpeed = toolId.includes("speed");
   const needsVolume = toolId === "volume-booster";
   const needsText =
+    isTextInputTool(toolId) ||
     toolId === "meme-maker" ||
     toolId === "add-watermark" ||
     toolId === "add-watermark-pdf" ||
@@ -397,6 +404,38 @@ function Controls({
         {needsRotation && (
           <Field label="Rotation angle" value={options.rotation ?? 90} step={90} onChange={(value) => update({ rotation: value })} />
         )}
+        {(toolId === "youtube-thumbnail-downloader" || toolId === "youtube-thumbnail-viewer") && (
+          <label className="grid gap-2">
+            <span className="text-xs text-muted-foreground">Thumbnail size</span>
+            <select
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={options.preset ?? "maxresdefault"}
+              onChange={(event) => update({ preset: event.target.value })}
+            >
+              <option value="maxresdefault">maxresdefault</option>
+              <option value="sddefault">sddefault</option>
+              <option value="hqdefault">hqdefault</option>
+              <option value="mqdefault">mqdefault</option>
+              <option value="default">default</option>
+            </select>
+          </label>
+        )}
+        {toolId === "social-media-image-resizer" && (
+          <label className="grid gap-2">
+            <span className="text-xs text-muted-foreground">Export size</span>
+            <select
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={options.preset ?? "instagram-post"}
+              onChange={(event) => update({ preset: event.target.value })}
+            >
+              <option value="instagram-post">Instagram post 1080x1080</option>
+              <option value="instagram-story">Instagram story 1080x1920</option>
+              <option value="tiktok-cover">TikTok cover 1080x1920</option>
+              <option value="youtube-thumbnail">YouTube thumbnail 1280x720</option>
+              <option value="youtube-banner">YouTube banner 2560x1440</option>
+            </select>
+          </label>
+        )}
         {toolId === "meme-maker" && (
           <>
             <TextField label="Top text" value={options.text ?? ""} onChange={(value) => update({ text: value })} />
@@ -420,7 +459,7 @@ function Controls({
             />
           </label>
         )}
-        {toolId === "text-case-converter" && (
+        {(toolId === "text-case-converter" || toolId === "case-converter") && (
           <>
             <label className="grid gap-2">
               <span className="text-xs text-muted-foreground">Conversion</span>
@@ -454,6 +493,17 @@ function Controls({
               value={options.bottomText ?? ""}
               onChange={(event) => update({ bottomText: event.target.value })}
               placeholder="Paste text here, or upload a .txt file above."
+            />
+          </label>
+        )}
+        {isTextInputTool(toolId) && toolId !== "txt-to-pdf" && toolId !== "text-case-converter" && toolId !== "case-converter" && toolId !== "word-counter" && (
+          <label className="grid gap-2 md:col-span-2">
+            <span className="text-xs text-muted-foreground">{toolId.includes("youtube") ? "YouTube URL, video ID, title, or description" : "Text content"}</span>
+            <textarea
+              className="min-h-36 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={options.bottomText ?? ""}
+              onChange={(event) => update({ bottomText: event.target.value })}
+              placeholder={toolId.includes("youtube") ? "Paste a YouTube URL, video ID, or text here." : "Paste text here."}
             />
           </label>
         )}
@@ -544,6 +594,23 @@ function ResultPanel({ result, onDownload }: { result: ProcessResult | null; onD
           {result.text}
         </pre>
       )}
+      {result.items && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {result.items.map((item) => (
+            <a
+              key={`${item.label}-${item.url ?? item.text ?? ""}`}
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg border border-border bg-background p-3 text-sm hover:border-brand"
+            >
+              {item.url && <img src={item.url} alt={item.label} className="mb-3 aspect-video w-full rounded-md object-cover" />}
+              <span className="font-medium">{item.label}</span>
+              {item.url && <span className="mt-1 block break-all text-xs text-muted-foreground">{item.url}</span>}
+            </a>
+          ))}
+        </div>
+      )}
       {isImage && result.previewUrl && <img src={result.previewUrl} alt="Preview" className="max-h-[420px] rounded-lg border border-border mx-auto" />}
       {isVideo && result.previewUrl && <video src={result.previewUrl} controls className="w-full max-h-[420px] rounded-lg border border-border" />}
       {isAudio && result.previewUrl && <audio src={result.previewUrl} controls className="w-full" />}
@@ -568,7 +635,7 @@ function VideoWarning() {
 function ToolDirectory({ selectedTool }: { selectedTool: ClientToolId; onSelect: (tool: ClientToolId) => void }) {
   return (
     <section className="mt-14 space-y-8">
-                {(["image", "pdf", "document", "audio", "video"] as const).map((category) => (
+                {(["image", "pdf", "document", "audio", "video", "youtube", "social", "text"] as const).map((category) => (
         <div key={category} id={category}>
           <h2 className="text-xl font-semibold capitalize mb-4">
             {`${category} tools`}
@@ -617,7 +684,7 @@ function HowToUse({ toolTitle }: { toolTitle: string }) {
 }
 
 function allowsTextOnly(toolId: ClientToolId) {
-  return toolId === "txt-to-pdf" || toolId === "text-case-converter" || toolId === "word-counter";
+  return isTextInputTool(toolId);
 }
 
 function canStartTool(toolId: ClientToolId, files: File[], options: ProcessOptions) {

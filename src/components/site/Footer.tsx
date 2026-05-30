@@ -39,7 +39,43 @@ const groups: Array<{ title: string; tools: ClientToolId[] }> = [
   },
   {
     title: "Document Tools",
-    tools: ["txt-to-pdf", "docx-to-text", "docx-to-html", "text-case-converter", "word-counter"],
+    tools: ["txt-to-pdf", "docx-to-text", "docx-to-html"],
+  },
+  {
+    title: "Text Tools",
+    tools: [
+      "word-counter",
+      "character-counter",
+      "text-case-converter",
+      "case-converter",
+      "remove-duplicate-lines",
+      "text-sorter",
+      "text-reverser",
+      "url-encoder",
+      "url-decoder",
+      "base64-encoder",
+      "base64-decoder",
+    ],
+  },
+  {
+    title: "YouTube Tools",
+    tools: [
+      "youtube-thumbnail-downloader",
+      "youtube-thumbnail-viewer",
+      "youtube-video-id-extractor",
+      "youtube-title-length-checker",
+      "youtube-description-length-checker",
+    ],
+  },
+  {
+    title: "Social Tools",
+    tools: [
+      "instagram-caption-formatter",
+      "instagram-hashtag-generator",
+      "tiktok-hashtag-generator",
+      "tiktok-caption-formatter",
+      "social-media-image-resizer",
+    ],
   },
   {
     title: "Audio Tools",
@@ -88,7 +124,7 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {groups.map((group) => (
               <nav key={group.title}>
                 <h2 className="text-sm font-semibold">{group.title}</h2>

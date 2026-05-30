@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import ffmpegCoreUrl from "@ffmpeg/core?url";
 import ffmpegCoreWasmUrl from "@ffmpeg/core/wasm?url";
 
-export type ToolCategory = "image" | "pdf" | "document" | "audio" | "video";
+export type ToolCategory = "image" | "pdf" | "document" | "audio" | "video" | "youtube" | "social" | "text";
 
 export type ClientToolId =
   | "jpg-to-png"
@@ -39,7 +39,26 @@ export type ClientToolId =
   | "video-trimmer"
   | "video-to-gif"
   | "extract-frames"
-  | "merge-videos";
+  | "merge-videos"
+  | "youtube-thumbnail-downloader"
+  | "youtube-thumbnail-viewer"
+  | "youtube-video-id-extractor"
+  | "youtube-title-length-checker"
+  | "youtube-description-length-checker"
+  | "instagram-caption-formatter"
+  | "instagram-hashtag-generator"
+  | "tiktok-hashtag-generator"
+  | "tiktok-caption-formatter"
+  | "social-media-image-resizer"
+  | "character-counter"
+  | "case-converter"
+  | "remove-duplicate-lines"
+  | "text-sorter"
+  | "text-reverser"
+  | "url-encoder"
+  | "url-decoder"
+  | "base64-encoder"
+  | "base64-decoder";
 
 export interface ToolDefinition {
   id: ClientToolId;
@@ -70,6 +89,7 @@ export interface ProcessOptions {
   blur?: number;
   rotation?: number;
   pageRange?: string;
+  preset?: string;
 }
 
 export interface ProcessResult {
@@ -78,6 +98,7 @@ export interface ProcessResult {
   previewUrl?: string;
   mime: string;
   text?: string;
+  items?: Array<{ label: string; url?: string; filename?: string; text?: string }>;
 }
 
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
@@ -205,7 +226,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     description: "Extract a page range from a PDF file.",
     seoTitle: "Split PDF Online - Free Browser Tool",
     metaDescription: "Split PDF pages directly in your browser. No uploads, private, fast, and free.",
-    category: "document",
+    category: "pdf",
     route: "/split-pdf",
     accept: "application/pdf",
     outputName: "split.pdf",
@@ -315,7 +336,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     description: "Convert pasted text to uppercase, lowercase, title case, or sentence case.",
     seoTitle: "Text Case Converter - Free Online Tool",
     metaDescription: "Convert text case in your browser. Uppercase, lowercase, title case, and sentence case with copy and download.",
-    category: "document",
+    category: "text",
     route: "/text-case-converter",
     accept: ".txt,text/plain",
     outputName: "converted-text.txt",
@@ -327,7 +348,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     description: "Count words, characters, sentences, and paragraphs from pasted text.",
     seoTitle: "Word Counter Online - Free Browser Tool",
     metaDescription: "Count words, characters, sentences, and paragraphs in your browser. Private, fast, and free.",
-    category: "document",
+    category: "text",
     route: "/word-counter",
     accept: ".txt,text/plain",
     outputName: "word-count.txt",
@@ -474,6 +495,234 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     outputName: "merged.mp4",
     engine: "ffmpeg",
   },
+  {
+    id: "youtube-thumbnail-downloader",
+    title: "YouTube Thumbnail Downloader",
+    description: "Paste a YouTube URL, preview thumbnail sizes, and download a public thumbnail image.",
+    seoTitle: "YouTube Thumbnail Downloader - Free Browser Tool",
+    metaDescription: "Download public YouTube thumbnails by pasting a video URL. Browser-only, fast, and no account required.",
+    category: "youtube",
+    route: "/youtube-thumbnail-downloader",
+    accept: "",
+    outputName: "youtube-thumbnail.jpg",
+    engine: "text",
+  },
+  {
+    id: "youtube-thumbnail-viewer",
+    title: "YouTube Thumbnail Viewer",
+    description: "Preview all common public YouTube thumbnail sizes from a video URL.",
+    seoTitle: "YouTube Thumbnail Viewer - Free Online Tool",
+    metaDescription: "View public YouTube thumbnail previews for maxres, sd, hq, mq, and default sizes in your browser.",
+    category: "youtube",
+    route: "/youtube-thumbnail-viewer",
+    accept: "",
+    outputName: "youtube-thumbnails.txt",
+    engine: "text",
+  },
+  {
+    id: "youtube-video-id-extractor",
+    title: "YouTube Video ID Extractor",
+    description: "Extract a YouTube video ID from watch, short, embed, or youtu.be links.",
+    seoTitle: "YouTube Video ID Extractor - Free Online Tool",
+    metaDescription: "Extract YouTube video IDs from youtube.com, youtu.be, and shorts URLs locally in your browser.",
+    category: "youtube",
+    route: "/youtube-video-id-extractor",
+    accept: "",
+    outputName: "youtube-video-id.txt",
+    engine: "text",
+  },
+  {
+    id: "youtube-title-length-checker",
+    title: "YouTube Title Length Checker",
+    description: "Count title characters and get simple length guidance.",
+    seoTitle: "YouTube Title Length Checker - Free SEO Tool",
+    metaDescription: "Check YouTube title character length and get simple browser-only guidance for clearer video titles.",
+    category: "youtube",
+    route: "/youtube-title-length-checker",
+    accept: ".txt,text/plain",
+    outputName: "youtube-title-check.txt",
+    engine: "text",
+  },
+  {
+    id: "youtube-description-length-checker",
+    title: "YouTube Description Length Checker",
+    description: "Count description characters and words before publishing.",
+    seoTitle: "YouTube Description Length Checker - Free Online Tool",
+    metaDescription: "Count YouTube description characters and words locally in your browser. Free, fast, and private.",
+    category: "youtube",
+    route: "/youtube-description-length-checker",
+    accept: ".txt,text/plain",
+    outputName: "youtube-description-check.txt",
+    engine: "text",
+  },
+  {
+    id: "instagram-caption-formatter",
+    title: "Instagram Caption Formatter",
+    description: "Clean spacing, preserve line breaks, and copy a formatted Instagram caption.",
+    seoTitle: "Instagram Caption Formatter - Free Browser Tool",
+    metaDescription: "Format Instagram captions locally in your browser. Clean spacing, preserve line breaks, and copy instantly.",
+    category: "social",
+    route: "/instagram-caption-formatter",
+    accept: ".txt,text/plain",
+    outputName: "instagram-caption.txt",
+    engine: "text",
+  },
+  {
+    id: "instagram-hashtag-generator",
+    title: "Instagram Hashtag Generator",
+    description: "Generate simple local hashtag ideas from your topic keywords.",
+    seoTitle: "Instagram Hashtag Generator - Free No AI Tool",
+    metaDescription: "Generate Instagram hashtag suggestions from your keywords locally in the browser. No AI API or login.",
+    category: "social",
+    route: "/instagram-hashtag-generator",
+    accept: ".txt,text/plain",
+    outputName: "instagram-hashtags.txt",
+    engine: "text",
+  },
+  {
+    id: "tiktok-hashtag-generator",
+    title: "TikTok Hashtag Generator",
+    description: "Create simple TikTok hashtag suggestions from topic keywords.",
+    seoTitle: "TikTok Hashtag Generator - Free Browser Tool",
+    metaDescription: "Generate TikTok hashtag ideas locally from your keywords. No paid API, no backend, and no login.",
+    category: "social",
+    route: "/tiktok-hashtag-generator",
+    accept: ".txt,text/plain",
+    outputName: "tiktok-hashtags.txt",
+    engine: "text",
+  },
+  {
+    id: "tiktok-caption-formatter",
+    title: "TikTok Caption Formatter",
+    description: "Clean spacing and line breaks for TikTok captions.",
+    seoTitle: "TikTok Caption Formatter - Free Online Tool",
+    metaDescription: "Format TikTok captions locally in your browser. Clean extra spacing and copy the result.",
+    category: "social",
+    route: "/tiktok-caption-formatter",
+    accept: ".txt,text/plain",
+    outputName: "tiktok-caption.txt",
+    engine: "text",
+  },
+  {
+    id: "social-media-image-resizer",
+    title: "Social Media Image Resizer",
+    description: "Resize images for Instagram, TikTok, and YouTube sizes using Canvas.",
+    seoTitle: "Social Media Image Resizer - Free Browser Tool",
+    metaDescription: "Resize images for Instagram posts, stories, TikTok covers, YouTube thumbnails, and banners directly in your browser.",
+    category: "social",
+    route: "/social-media-image-resizer",
+    accept: "image/*",
+    outputName: "social-image.png",
+    engine: "canvas",
+  },
+  {
+    id: "character-counter",
+    title: "Character Counter",
+    description: "Count characters, characters without spaces, words, and lines.",
+    seoTitle: "Character Counter Online - Free Browser Tool",
+    metaDescription: "Count characters, words, lines, and characters without spaces locally in your browser.",
+    category: "text",
+    route: "/character-counter",
+    accept: ".txt,text/plain",
+    outputName: "character-count.txt",
+    engine: "text",
+  },
+  {
+    id: "case-converter",
+    title: "Case Converter",
+    description: "Convert text to uppercase, lowercase, title case, or sentence case.",
+    seoTitle: "Case Converter Online - Free Text Tool",
+    metaDescription: "Convert text case locally in your browser. Uppercase, lowercase, title case, and sentence case.",
+    category: "text",
+    route: "/case-converter",
+    accept: ".txt,text/plain",
+    outputName: "converted-text.txt",
+    engine: "text",
+  },
+  {
+    id: "remove-duplicate-lines",
+    title: "Remove Duplicate Lines",
+    description: "Remove repeated lines while keeping the first occurrence.",
+    seoTitle: "Remove Duplicate Lines Online - Free Text Tool",
+    metaDescription: "Remove duplicate text lines locally in your browser. No upload, no login, and free.",
+    category: "text",
+    route: "/remove-duplicate-lines",
+    accept: ".txt,text/plain",
+    outputName: "unique-lines.txt",
+    engine: "text",
+  },
+  {
+    id: "text-sorter",
+    title: "Text Sorter",
+    description: "Sort lines alphabetically in your browser.",
+    seoTitle: "Text Sorter Online - Free Line Sorter",
+    metaDescription: "Sort text lines alphabetically in your browser. Private, fast, and no uploads.",
+    category: "text",
+    route: "/text-sorter",
+    accept: ".txt,text/plain",
+    outputName: "sorted-text.txt",
+    engine: "text",
+  },
+  {
+    id: "text-reverser",
+    title: "Text Reverser",
+    description: "Reverse text characters or lines locally.",
+    seoTitle: "Text Reverser Online - Free Browser Tool",
+    metaDescription: "Reverse text locally in your browser. Free text reversing tool with copy and download.",
+    category: "text",
+    route: "/text-reverser",
+    accept: ".txt,text/plain",
+    outputName: "reversed-text.txt",
+    engine: "text",
+  },
+  {
+    id: "url-encoder",
+    title: "URL Encoder",
+    description: "Encode text for safe use in URLs.",
+    seoTitle: "URL Encoder Online - Free Browser Tool",
+    metaDescription: "Encode URLs and query text locally in your browser using JavaScript.",
+    category: "text",
+    route: "/url-encoder",
+    accept: ".txt,text/plain",
+    outputName: "encoded-url.txt",
+    engine: "text",
+  },
+  {
+    id: "url-decoder",
+    title: "URL Decoder",
+    description: "Decode URL-encoded text locally.",
+    seoTitle: "URL Decoder Online - Free Browser Tool",
+    metaDescription: "Decode URL encoded text locally in your browser. No uploads or account required.",
+    category: "text",
+    route: "/url-decoder",
+    accept: ".txt,text/plain",
+    outputName: "decoded-url.txt",
+    engine: "text",
+  },
+  {
+    id: "base64-encoder",
+    title: "Base64 Encoder",
+    description: "Encode plain text to Base64 locally.",
+    seoTitle: "Base64 Encoder Online - Free Browser Tool",
+    metaDescription: "Encode text to Base64 locally in your browser. Lightweight, private, and free.",
+    category: "text",
+    route: "/base64-encoder",
+    accept: ".txt,text/plain",
+    outputName: "base64-encoded.txt",
+    engine: "text",
+  },
+  {
+    id: "base64-decoder",
+    title: "Base64 Decoder",
+    description: "Decode Base64 text in your browser.",
+    seoTitle: "Base64 Decoder Online - Free Browser Tool",
+    metaDescription: "Decode Base64 text locally in your browser. No server uploads or paid APIs.",
+    category: "text",
+    route: "/base64-decoder",
+    accept: ".txt,text/plain",
+    outputName: "base64-decoded.txt",
+    engine: "text",
+  },
 ];
 
 export function getTool(id: ClientToolId): ToolDefinition {
@@ -508,9 +757,12 @@ export async function processTool(
   onProgress: (progress: number, stage: string) => void,
 ): Promise<ProcessResult> {
   const tool = getTool(toolId);
-  const acceptsTextOnly = tool.id === "txt-to-pdf" || tool.id === "text-case-converter" || tool.id === "word-counter";
+  const acceptsTextOnly = isTextInputTool(tool.id);
   if (!acceptsTextOnly && files.length === 0) throw new Error("Choose a file first.");
 
+  if (tool.category === "youtube" || tool.category === "text") return processTextTool(tool, files, options, onProgress);
+  if (tool.category === "social" && tool.id !== "social-media-image-resizer") return processTextTool(tool, files, options, onProgress);
+  if (tool.id === "social-media-image-resizer") return processImageTool(tool, files, options, onProgress);
   if (tool.category === "pdf") return processPdfTool(tool, files, options, onProgress);
   if (tool.category === "document") return processDocumentTool(tool, files, options, onProgress);
   if (tool.category === "video") return processVideoTool(tool, files, options, onProgress);
@@ -519,6 +771,32 @@ export async function processTool(
   }
   if (tool.category === "image") return processImageTool(tool, files, options, onProgress);
   return processWebAudioTool(tool, files, options, onProgress);
+}
+
+export function isTextInputTool(toolId: ClientToolId) {
+  return [
+    "txt-to-pdf",
+    "text-case-converter",
+    "word-counter",
+    "youtube-thumbnail-downloader",
+    "youtube-thumbnail-viewer",
+    "youtube-video-id-extractor",
+    "youtube-title-length-checker",
+    "youtube-description-length-checker",
+    "instagram-caption-formatter",
+    "instagram-hashtag-generator",
+    "tiktok-hashtag-generator",
+    "tiktok-caption-formatter",
+    "character-counter",
+    "case-converter",
+    "remove-duplicate-lines",
+    "text-sorter",
+    "text-reverser",
+    "url-encoder",
+    "url-decoder",
+    "base64-encoder",
+    "base64-decoder",
+  ].includes(toolId);
 }
 
 type FFmpegInstance = {
@@ -736,6 +1014,212 @@ function videoFailureMessage(toolId: ClientToolId) {
     return "GIF creation is heavy in the browser. Try a shorter clip, lower duration, or smaller file.";
   }
   return "Video processing failed in the browser. Try a smaller file or a video with a common MP4/WebM format.";
+}
+
+async function processTextTool(
+  tool: ToolDefinition,
+  files: File[],
+  options: ProcessOptions,
+  onProgress: (progress: number, stage: string) => void,
+): Promise<ProcessResult> {
+  onProgress(10, "Preparing text");
+  const input = await readFlexibleTextInput(files[0], options);
+  onProgress(60, "Processing in browser");
+
+  if (tool.id === "youtube-thumbnail-downloader" || tool.id === "youtube-thumbnail-viewer") {
+    const videoId = extractYouTubeVideoId(input);
+    if (!videoId) throw new Error("Paste a valid YouTube URL or video ID.");
+    const sizes = youtubeThumbnailSizes(videoId);
+    const selected = sizes.find((item) => item.label === (options.preset || "maxresdefault")) ?? sizes[0];
+    if (tool.id === "youtube-thumbnail-viewer") {
+      const text = sizes.map((item) => `${item.label}: ${item.url}`).join("\n");
+      return textResultWithItems(tool, text, "text/plain", sizes, onProgress);
+    }
+    try {
+      const response = await fetch(selected.url);
+      if (!response.ok) throw new Error("Thumbnail size was not available.");
+      const blob = await response.blob();
+      onProgress(100, "Done");
+      return {
+        blob,
+        filename: `youtube-${videoId}-${selected.label}.jpg`,
+        previewUrl: URL.createObjectURL(blob),
+        mime: blob.type || "image/jpeg",
+        text: sizes.map((item) => `${item.label}: ${item.url}`).join("\n"),
+        items: sizes,
+      };
+    } catch {
+      return textResultWithItems(
+        tool,
+        `Preview links are ready. If download is blocked by the browser, open the selected thumbnail and save it.\n\n${sizes
+          .map((item) => `${item.label}: ${item.url}`)
+          .join("\n")}`,
+        "text/plain",
+        sizes,
+        onProgress,
+      );
+    }
+  }
+
+  if (tool.id === "youtube-video-id-extractor") {
+    const videoId = extractYouTubeVideoId(input);
+    if (!videoId) throw new Error("Paste a valid YouTube URL or video ID.");
+    return textResult(tool, videoId, "text/plain", onProgress);
+  }
+
+  if (tool.id === "youtube-title-length-checker") {
+    const count = input.length;
+    const guidance = count <= 0 ? "Paste a title first." : count <= 70 ? "Good length for most search and browse surfaces." : "Consider shortening so the full title is easier to scan.";
+    return textResult(tool, [`Characters: ${count}`, `Guidance: ${guidance}`].join("\n"), "text/plain", onProgress);
+  }
+
+  if (tool.id === "youtube-description-length-checker") {
+    return textResult(tool, textStats(input), "text/plain", onProgress);
+  }
+
+  if (tool.id === "instagram-caption-formatter" || tool.id === "tiktok-caption-formatter") {
+    return textResult(tool, formatCaption(input), "text/plain", onProgress);
+  }
+
+  if (tool.id === "instagram-hashtag-generator" || tool.id === "tiktok-hashtag-generator") {
+    return textResult(tool, generateHashtags(input, tool.id.startsWith("tiktok")), "text/plain", onProgress);
+  }
+
+  if (tool.id === "character-counter") {
+    const output = [
+      `Characters: ${input.length}`,
+      `Characters without spaces: ${input.replace(/\s/g, "").length}`,
+      `Words: ${countWords(input)}`,
+      `Lines: ${input ? input.split(/\r?\n/).length : 0}`,
+    ].join("\n");
+    return textResult(tool, output, "text/plain", onProgress);
+  }
+
+  if (tool.id === "case-converter" || tool.id === "text-case-converter") {
+    return textResult(tool, convertCase(input, options.text), "text/plain", onProgress);
+  }
+
+  if (tool.id === "word-counter") {
+    const output = [
+      `Words: ${countWords(input)}`,
+      `Characters: ${input.length}`,
+      `Characters without spaces: ${input.replace(/\s/g, "").length}`,
+      `Sentences: ${countSentences(input)}`,
+      `Paragraphs: ${countParagraphs(input)}`,
+    ].join("\n");
+    return textResult(tool, output, "text/plain", onProgress);
+  }
+
+  if (tool.id === "remove-duplicate-lines") {
+    return textResult(tool, [...new Set(input.split(/\r?\n/))].join("\n"), "text/plain", onProgress);
+  }
+
+  if (tool.id === "text-sorter") {
+    return textResult(tool, input.split(/\r?\n/).sort((a, b) => a.localeCompare(b)).join("\n"), "text/plain", onProgress);
+  }
+
+  if (tool.id === "text-reverser") {
+    return textResult(tool, [...input].reverse().join(""), "text/plain", onProgress);
+  }
+
+  if (tool.id === "url-encoder") return textResult(tool, encodeURIComponent(input), "text/plain", onProgress);
+  if (tool.id === "url-decoder") {
+    try {
+      return textResult(tool, decodeURIComponent(input), "text/plain", onProgress);
+    } catch {
+      throw new Error("This does not look like valid URL-encoded text.");
+    }
+  }
+  if (tool.id === "base64-encoder") return textResult(tool, btoa(unescape(encodeURIComponent(input))), "text/plain", onProgress);
+  if (tool.id === "base64-decoder") {
+    try {
+      return textResult(tool, decodeURIComponent(escape(atob(input.trim()))), "text/plain", onProgress);
+    } catch {
+      throw new Error("This does not look like valid Base64 text.");
+    }
+  }
+
+  throw new Error("This text tool is not available.");
+}
+
+function extractYouTubeVideoId(value: string) {
+  const trimmed = value.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  try {
+    const url = new URL(trimmed);
+    if (url.hostname.includes("youtu.be")) return cleanVideoId(url.pathname.split("/").filter(Boolean)[0]);
+    if (url.pathname.startsWith("/shorts/")) return cleanVideoId(url.pathname.split("/")[2]);
+    if (url.pathname.startsWith("/embed/")) return cleanVideoId(url.pathname.split("/")[2]);
+    return cleanVideoId(url.searchParams.get("v") ?? "");
+  } catch {
+    return null;
+  }
+}
+
+function cleanVideoId(value?: string | null) {
+  const match = (value ?? "").match(/[a-zA-Z0-9_-]{11}/);
+  return match?.[0] ?? null;
+}
+
+function youtubeThumbnailSizes(videoId: string) {
+  return ["maxresdefault", "sddefault", "hqdefault", "mqdefault", "default"].map((label) => ({
+    label,
+    url: `https://img.youtube.com/vi/${videoId}/${label}.jpg`,
+    filename: `youtube-${videoId}-${label}.jpg`,
+  }));
+}
+
+function formatCaption(value: string) {
+  return value
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function generateHashtags(value: string, tiktok: boolean) {
+  const base = value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/i)
+    .map((word) => word.trim())
+    .filter((word) => word.length > 1);
+  const unique = [...new Set(base)].slice(0, 12);
+  const general = tiktok ? ["fyp", "tiktok", "viral", "creator"] : ["instagram", "instagood", "creator", "content"];
+  return [...unique, ...general]
+    .slice(0, 18)
+    .map((word) => `#${word.replace(/[^a-z0-9]/gi, "")}`)
+    .join(" ");
+}
+
+function textStats(input: string) {
+  return [
+    `Characters: ${input.length}`,
+    `Characters without spaces: ${input.replace(/\s/g, "").length}`,
+    `Words: ${countWords(input)}`,
+    `Sentences: ${countSentences(input)}`,
+    `Paragraphs: ${countParagraphs(input)}`,
+  ].join("\n");
+}
+
+function countWords(input: string) {
+  return input.trim() ? input.trim().split(/\s+/).length : 0;
+}
+
+function countSentences(input: string) {
+  return input.trim() ? input.split(/[.!?]+/).filter((part) => part.trim()).length : 0;
+}
+
+function countParagraphs(input: string) {
+  return input.trim() ? input.split(/\n\s*\n/).filter((part) => part.trim()).length : 0;
+}
+
+function convertCase(input: string, mode?: string) {
+  if (mode === "lowercase") return input.toLowerCase();
+  if (mode === "title") return toTitleCase(input);
+  if (mode === "sentence") return toSentenceCase(input);
+  return input.toUpperCase();
 }
 
 async function processDocumentTool(
@@ -969,6 +1453,12 @@ async function readTextInput(file: File | undefined, options: ProcessOptions) {
   return text;
 }
 
+async function readFlexibleTextInput(file: File | undefined, options: ProcessOptions) {
+  const text = file ? await file.text() : options.bottomText || options.text || "";
+  if (!text.trim()) throw new Error("Paste text first.");
+  return text;
+}
+
 function textResult(
   tool: ToolDefinition,
   text: string,
@@ -979,6 +1469,17 @@ function textResult(
   const blob = new Blob([text], { type: mime });
   onProgress(100, "Done");
   return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime, text };
+}
+
+function textResultWithItems(
+  tool: ToolDefinition,
+  text: string,
+  mime: string,
+  items: ProcessResult["items"],
+  onProgress: (progress: number, stage: string) => void,
+): ProcessResult {
+  const result = textResult(tool, text, mime, onProgress);
+  return { ...result, items };
 }
 
 function toTitleCase(value: string) {
@@ -1066,15 +1567,20 @@ async function processImageTool(
 
   const width = options.width || image.width;
   const height = options.height || Math.round((image.height / image.width) * width);
-  canvas.width = width;
-  canvas.height = height;
+  const socialSize = tool.id === "social-media-image-resizer" ? socialImageSize(options.preset) : null;
+  const targetWidth = socialSize?.width ?? width;
+  const targetHeight = socialSize?.height ?? height;
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
 
   if (tool.id === "crop-image") {
     const size = Math.min(image.width, image.height);
-    context.drawImage(image, (image.width - size) / 2, (image.height - size) / 2, size, size, 0, 0, width, height);
+    context.drawImage(image, (image.width - size) / 2, (image.height - size) / 2, size, size, 0, 0, targetWidth, targetHeight);
+  } else if (tool.id === "social-media-image-resizer" && socialSize) {
+    drawImageCover(context, image, targetWidth, targetHeight);
   } else {
     if (tool.id === "blur-image") context.filter = `blur(${options.blur ?? 6}px)`;
-    context.drawImage(image, 0, 0, width, height);
+    context.drawImage(image, 0, 0, targetWidth, targetHeight);
   }
 
   if (tool.id === "meme-maker") {
@@ -1101,6 +1607,26 @@ async function processImageTool(
   onProgress(96, "Creating download");
   onProgress(100, "Done");
   return { blob, filename: tool.outputName, previewUrl: URL.createObjectURL(blob), mime };
+}
+
+function socialImageSize(preset?: string) {
+  const presets: Record<string, { width: number; height: number }> = {
+    "instagram-post": { width: 1080, height: 1080 },
+    "instagram-story": { width: 1080, height: 1920 },
+    "tiktok-cover": { width: 1080, height: 1920 },
+    "youtube-thumbnail": { width: 1280, height: 720 },
+    "youtube-banner": { width: 2560, height: 1440 },
+  };
+  return presets[preset || "instagram-post"];
+}
+
+function drawImageCover(context: CanvasRenderingContext2D, image: HTMLImageElement, width: number, height: number) {
+  const scale = Math.max(width / image.width, height / image.height);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = (image.width - sourceWidth) / 2;
+  const sourceY = (image.height - sourceHeight) / 2;
+  context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, width, height);
 }
 
 function parsePageRange(range: string | undefined, pageCount: number) {
