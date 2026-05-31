@@ -9,6 +9,7 @@ import {
   type ClientToolId,
   type ProcessOptions,
   type ProcessResult,
+  type ToolCategory,
   TOOL_DEFINITIONS,
   downloadBlob,
   getTool,
@@ -131,6 +132,7 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
     <div className="min-h-screen bg-background text-foreground">
       <TopBar />
       <main className="max-w-7xl mx-auto px-6 py-10">
+        <Breadcrumbs toolTitle={tool.title} category={tool.category} />
         <section className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
             <div>
@@ -169,14 +171,14 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
                   Tool categories
                 </h2>
                 <div className="grid gap-2">
-                {(["image", "pdf", "document", "word", "audio", "video", "youtube", "developer", "network"] as const).map((category) => (
-                    <a
+                {(["image", "pdf", "word", "audio", "video", "developer", "network"] as const).map((category) => (
+                    <Link
                       key={category}
-                      href={`#${category}`}
+                      to={categoryPath(category)}
                       className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm capitalize hover:border-brand transition-colors"
                     >
-                      {category} tools
-                    </a>
+                      {categoryLabel(category)}
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -186,7 +188,7 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
                   Related tools
                 </h2>
                 <div className="grid gap-2">
-                  {relatedTools.map((item) => (
+                  {relatedTools.filter((item) => item.id !== tool.id).slice(0, 8).map((item) => (
                     <Link
                       key={item.id}
                       to={getToolPath(item.id)}
@@ -280,7 +282,6 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
 
         <HowToUse toolTitle={tool.title} />
         <FAQ toolTitle={tool.title} />
-        <ToolDirectory selectedTool={selectedTool} onSelect={setSelectedTool} />
       </main>
     </div>
   );
@@ -295,19 +296,53 @@ function TopBar() {
           <span className="text-sm font-bold tracking-tight">CreatorKitTools</span>
         </Link>
         <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
-          <a href="#image" className="hover:text-foreground">Image</a>
-          <a href="#pdf" className="hover:text-foreground">PDF</a>
-          <a href="#document" className="hover:text-foreground">Document</a>
-          <a href="#word" className="hover:text-foreground">Word</a>
-          <a href="#audio" className="hover:text-foreground">Audio</a>
-          <a href="#video" className="hover:text-foreground">Video</a>
-          <a href="#youtube" className="hover:text-foreground">YouTube</a>
-          <a href="#developer" className="hover:text-foreground">Developer</a>
-          <a href="#network" className="hover:text-foreground">Network</a>
+          <Link to="/image-tools" className="hover:text-foreground">Image</Link>
+          <Link to="/pdf-tools" className="hover:text-foreground">PDF</Link>
+          <Link to="/word-tools" className="hover:text-foreground">Word</Link>
+          <Link to="/audio-tools" className="hover:text-foreground">Audio</Link>
+          <Link to="/video-tools" className="hover:text-foreground">Video</Link>
+          <Link to="/developer-tools" className="hover:text-foreground">Developer</Link>
+          <Link to="/network-tools" className="hover:text-foreground">Network</Link>
         </div>
       </div>
     </nav>
   );
+}
+
+function Breadcrumbs({ toolTitle, category }: { toolTitle: string; category: ToolCategory }) {
+  return (
+    <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
+      <Link to="/" className="hover:text-foreground">
+        Home
+      </Link>
+      <span>/</span>
+      <Link to={categoryPath(category)} className="hover:text-foreground">
+        {categoryLabel(category)}
+      </Link>
+      <span>/</span>
+      <span className="font-medium text-foreground">{toolTitle}</span>
+    </nav>
+  );
+}
+
+function categoryPath(category: ToolCategory) {
+  if (category === "pdf") return "/pdf-tools";
+  if (category === "word" || category === "document") return "/word-tools";
+  if (category === "audio") return "/audio-tools";
+  if (category === "video") return "/video-tools";
+  if (category === "developer" || category === "text" || category === "youtube") return "/developer-tools";
+  if (category === "network") return "/network-tools";
+  return "/image-tools";
+}
+
+function categoryLabel(category: ToolCategory) {
+  if (category === "pdf") return "PDF Tools";
+  if (category === "word" || category === "document") return "Word Tools";
+  if (category === "audio") return "Audio Tools";
+  if (category === "video") return "Video Tools";
+  if (category === "developer" || category === "text" || category === "youtube") return "Developer Tools";
+  if (category === "network") return "Network Tools";
+  return "Image Tools";
 }
 
 function UploadPanel({
@@ -526,12 +561,12 @@ function Controls({
         )}
         {isTextInputTool(toolId) && toolId !== "txt-to-pdf" && toolId !== "text-case-converter" && toolId !== "case-converter" && toolId !== "word-counter" && (
           <label className="grid gap-2 md:col-span-2">
-            <span className="text-xs text-muted-foreground">{toolId.includes("youtube") ? "YouTube URL, video ID, title, or description" : toolId === "ip-lookup" ? "IP address" : toolId === "regex-tester" ? "Test text" : toolId === "text-diff-checker" ? "Changed text" : "Text content"}</span>
+            <span className="text-xs text-muted-foreground">{toolId.includes("youtube") ? "YouTube URL, video ID, title, or description" : toolId === "ip-lookup" ? "IP address, or leave blank for your IP" : toolId === "regex-tester" ? "Test text" : toolId === "text-diff-checker" ? "Changed text" : "Text content"}</span>
             <textarea
               className="min-h-36 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={options.bottomText ?? ""}
               onChange={(event) => update({ bottomText: event.target.value })}
-              placeholder={toolId.includes("youtube") ? "Paste a YouTube URL, video ID, or text here." : toolId === "ip-lookup" ? "Example: 8.8.8.8" : "Paste text here."}
+              placeholder={toolId.includes("youtube") ? "Paste a YouTube URL, video ID, or text here." : toolId === "ip-lookup" ? "Example: 8.8.8.8, or leave blank to check your IP." : "Paste text here."}
             />
           </label>
         )}
@@ -660,37 +695,6 @@ function VideoWarning() {
   );
 }
 
-function ToolDirectory({ selectedTool }: { selectedTool: ClientToolId; onSelect: (tool: ClientToolId) => void }) {
-  return (
-    <section className="mt-14 space-y-8">
-                {(["image", "pdf", "document", "word", "audio", "video", "youtube", "developer", "network"] as const).map((category) => (
-        <div key={category} id={category}>
-          <h2 className="text-xl font-semibold capitalize mb-4">
-            {`${category} tools`}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {TOOL_DEFINITIONS.filter((tool) => tool.category === category).map((tool) => (
-              <Link
-                key={tool.id}
-                to={getToolPath(tool.id)}
-                className={cn(
-                  "rounded-lg border p-4 text-left bg-card transition-colors block",
-                  selectedTool === tool.id ? "border-brand" : "border-border hover:border-brand",
-                )}
-              >
-                <span className="flex items-center justify-between gap-2 text-sm font-semibold">
-                  {tool.title}
-                </span>
-                <span className="block text-xs text-muted-foreground mt-1">{tool.description}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      ))}
-    </section>
-  );
-}
-
 function HowToUse({ toolTitle }: { toolTitle: string }) {
   const steps = ["Choose your file", "Adjust options", "Process in browser", "Download result"];
 
@@ -717,6 +721,7 @@ function allowsTextOnly(toolId: ClientToolId) {
 
 function canStartTool(toolId: ClientToolId, files: File[], options: ProcessOptions) {
   if (toolId === "document-compare") return files.length >= 2;
+  if (toolId === "ip-lookup") return true;
   if (!allowsTextOnly(toolId)) return files.length > 0;
   if (isNoInputTool(toolId)) return true;
   return files.length > 0 || textOnlyValue(toolId, options).length > 0;

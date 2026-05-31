@@ -10,117 +10,74 @@ const legalLinks = [
   { to: "/disclaimer", label: "Disclaimer" },
 ];
 
-const groups: Array<{ title: string; tools: ClientToolId[] }> = [
+const groups: Array<{ title: string; href: string; tools: ClientToolId[] }> = [
   {
     title: "Image Tools",
+    href: "/image-tools",
     tools: [
       "image-compressor",
       "jpg-to-png",
       "png-to-jpg",
       "resize-image",
       "crop-image",
-      "blur-image",
-      "meme-maker",
-      "add-watermark",
-      "image-to-pdf",
     ],
   },
   {
     title: "PDF Tools",
+    href: "/pdf-tools",
     tools: [
       "merge-pdf",
       "split-pdf",
       "pdf-to-jpg",
       "jpg-to-pdf",
       "png-to-pdf",
-      "rotate-pdf",
-      "add-watermark-pdf",
     ],
   },
   {
-    title: "Document Tools",
-    tools: ["txt-to-pdf", "docx-to-text", "docx-to-html"],
-  },
-  {
     title: "Word Tools",
+    href: "/word-tools",
     tools: [
       "word-to-txt",
       "txt-to-word",
       "word-to-html",
-      "html-to-word",
       "word-to-markdown",
-      "markdown-to-word",
-      "word-word-counter",
-      "word-character-counter",
-      "word-metadata-viewer",
-      "word-text-extractor",
       "word-image-extractor",
-      "document-compare",
     ],
   },
   {
     title: "Developer Tools",
+    href: "/developer-tools",
     tools: [
-      "base64-encoder",
-      "base64-decoder",
-      "url-encoder",
-      "url-decoder",
-      "html-encoder",
-      "html-decoder",
       "jwt-decoder",
       "json-formatter-validator",
-      "xml-formatter",
-      "yaml-to-json",
-      "json-to-yaml",
-      "regex-tester",
-      "text-diff-checker",
-      "word-counter",
-      "character-counter",
-      "case-converter",
-      "lorem-ipsum-generator",
       "uuid-generator",
       "password-generator",
-      "password-strength-checker",
       "hash-generator",
-      "text-case-converter",
-      "remove-duplicate-lines",
-      "text-sorter",
     ],
   },
   {
     title: "Network Tools",
+    href: "/network-tools",
     tools: ["what-is-my-ip", "ip-lookup", "user-agent-detector"],
   },
   {
-    title: "YouTube Tools",
-    tools: [
-      "youtube-thumbnail-downloader",
-      "youtube-thumbnail-viewer",
-      "youtube-video-id-extractor",
-      "youtube-title-length-checker",
-      "youtube-description-length-checker",
-    ],
-  },
-  {
     title: "Audio Tools",
+    href: "/audio-tools",
     tools: [
       "mp3-cutter",
       "audio-merger",
       "audio-trimmer",
       "volume-booster",
-      "reverse-audio",
-      "change-audio-speed",
     ],
   },
   {
     title: "Video Tools",
+    href: "/video-tools",
     tools: [
       "video-to-mp3",
       "mute-video",
       "video-trimmer",
       "video-to-gif",
-      "extract-frames",
-      "merge-videos",
     ],
   },
 ];
@@ -151,7 +108,9 @@ export function SiteFooter() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {groups.map((group) => (
               <nav key={group.title}>
-                <h2 className="text-sm font-semibold">{group.title}</h2>
+                <Link to={group.href} className="text-sm font-semibold hover:text-brand">
+                  {group.title}
+                </Link>
                 <div className="mt-3 grid gap-2">
                   {group.tools.map((id) => {
                     const tool = getTool(id);
@@ -161,6 +120,9 @@ export function SiteFooter() {
                       </Link>
                     );
                   })}
+                  <Link to={group.href} className="text-sm font-medium text-brand hover:underline">
+                    View all
+                  </Link>
                 </div>
               </nav>
             ))}

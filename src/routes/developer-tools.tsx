@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { TOOL_DEFINITIONS, getToolPath } from "@/lib/client-tools";
+import { CategoryToolsPage } from "@/components/site/CategoryToolsPage";
 
 export const Route = createFileRoute("/developer-tools")({
   head: () => ({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/developer-tools")({
       { title: "Developer Tools - Free Browser-Based Utilities" },
       {
         name: "description",
-        content: "Free developer tools for encoding, decoding, formatting, validating, hashing, passwords, UUIDs, regex, and text diff checks.",
+        content: "Free developer, text, and creator utilities for encoding, decoding, formatting, validating, hashing, passwords, UUIDs, and YouTube metadata helpers.",
       },
       { name: "robots", content: "index,follow" },
       { property: "og:title", content: "Developer Tools - CreatorKitTools" },
@@ -17,29 +17,11 @@ export const Route = createFileRoute("/developer-tools")({
     ],
     links: [{ rel: "canonical", href: "https://creatorkittools.com/developer-tools" }],
   }),
-  component: DeveloperToolsPage,
+  component: () => (
+    <CategoryToolsPage
+      title="Developer Tools"
+      description="Format, encode, decode, validate, generate, and compare text directly in your browser."
+      categories={["developer", "text", "youtube"]}
+    />
+  ),
 });
-
-function DeveloperToolsPage() {
-  const tools = TOOL_DEFINITIONS.filter((tool) => tool.category === "developer");
-
-  return (
-    <main className="min-h-screen bg-background px-6 py-12 text-foreground">
-      <section className="mx-auto max-w-7xl">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand">CreatorKitTools</p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">Developer Tools</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">
-          Encode, decode, format, validate, generate, and compare text directly in your browser.
-        </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {tools.map((tool) => (
-            <Link key={tool.id} to={getToolPath(tool.id)} className="rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:border-brand">
-              <h2 className="text-base font-semibold">{tool.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{tool.description}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
-}

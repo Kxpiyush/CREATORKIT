@@ -10,18 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WordToolsRouteImport } from './routes/word-tools'
+import { Route as VideoToolsRouteImport } from './routes/video-tools'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResizeImageRouteImport } from './routes/resize-image'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PngToJpgRouteImport } from './routes/png-to-jpg'
+import { Route as PdfToolsRouteImport } from './routes/pdf-tools'
 import { Route as NetworkToolsRouteImport } from './routes/network-tools'
 import { Route as Mp3CutterRouteImport } from './routes/mp3-cutter'
 import { Route as JpgToPngRouteImport } from './routes/jpg-to-png'
+import { Route as ImageToolsRouteImport } from './routes/image-tools'
 import { Route as ImageCompressorRouteImport } from './routes/image-compressor'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as DeveloperToolsRouteImport } from './routes/developer-tools'
 import { Route as CropImageRouteImport } from './routes/crop-image'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AudioToolsRouteImport } from './routes/audio-tools'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ToolIdRouteImport } from './routes/$toolId'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +33,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const WordToolsRoute = WordToolsRouteImport.update({
   id: '/word-tools',
   path: '/word-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideoToolsRoute = VideoToolsRouteImport.update({
+  id: '/video-tools',
+  path: '/video-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -51,6 +60,11 @@ const PngToJpgRoute = PngToJpgRouteImport.update({
   path: '/png-to-jpg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PdfToolsRoute = PdfToolsRouteImport.update({
+  id: '/pdf-tools',
+  path: '/pdf-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NetworkToolsRoute = NetworkToolsRouteImport.update({
   id: '/network-tools',
   path: '/network-tools',
@@ -64,6 +78,11 @@ const Mp3CutterRoute = Mp3CutterRouteImport.update({
 const JpgToPngRoute = JpgToPngRouteImport.update({
   id: '/jpg-to-png',
   path: '/jpg-to-png',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImageToolsRoute = ImageToolsRouteImport.update({
+  id: '/image-tools',
+  path: '/image-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImageCompressorRoute = ImageCompressorRouteImport.update({
@@ -91,6 +110,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AudioToolsRoute = AudioToolsRouteImport.update({
+  id: '/audio-tools',
+  path: '/audio-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -111,36 +135,44 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$toolId': typeof ToolIdRoute
   '/about': typeof AboutRoute
+  '/audio-tools': typeof AudioToolsRoute
   '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
   '/developer-tools': typeof DeveloperToolsRoute
   '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
+  '/image-tools': typeof ImageToolsRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
   '/network-tools': typeof NetworkToolsRoute
+  '/pdf-tools': typeof PdfToolsRoute
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
+  '/video-tools': typeof VideoToolsRoute
   '/word-tools': typeof WordToolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$toolId': typeof ToolIdRoute
   '/about': typeof AboutRoute
+  '/audio-tools': typeof AudioToolsRoute
   '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
   '/developer-tools': typeof DeveloperToolsRoute
   '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
+  '/image-tools': typeof ImageToolsRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
   '/network-tools': typeof NetworkToolsRoute
+  '/pdf-tools': typeof PdfToolsRoute
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
+  '/video-tools': typeof VideoToolsRoute
   '/word-tools': typeof WordToolsRoute
 }
 export interface FileRoutesById {
@@ -148,18 +180,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$toolId': typeof ToolIdRoute
   '/about': typeof AboutRoute
+  '/audio-tools': typeof AudioToolsRoute
   '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
   '/developer-tools': typeof DeveloperToolsRoute
   '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
+  '/image-tools': typeof ImageToolsRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
   '/network-tools': typeof NetworkToolsRoute
+  '/pdf-tools': typeof PdfToolsRoute
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
+  '/video-tools': typeof VideoToolsRoute
   '/word-tools': typeof WordToolsRoute
 }
 export interface FileRouteTypes {
@@ -168,54 +204,66 @@ export interface FileRouteTypes {
     | '/'
     | '/$toolId'
     | '/about'
+    | '/audio-tools'
     | '/contact'
     | '/crop-image'
     | '/developer-tools'
     | '/disclaimer'
     | '/image-compressor'
+    | '/image-tools'
     | '/jpg-to-png'
     | '/mp3-cutter'
     | '/network-tools'
+    | '/pdf-tools'
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
+    | '/video-tools'
     | '/word-tools'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$toolId'
     | '/about'
+    | '/audio-tools'
     | '/contact'
     | '/crop-image'
     | '/developer-tools'
     | '/disclaimer'
     | '/image-compressor'
+    | '/image-tools'
     | '/jpg-to-png'
     | '/mp3-cutter'
     | '/network-tools'
+    | '/pdf-tools'
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
+    | '/video-tools'
     | '/word-tools'
   id:
     | '__root__'
     | '/'
     | '/$toolId'
     | '/about'
+    | '/audio-tools'
     | '/contact'
     | '/crop-image'
     | '/developer-tools'
     | '/disclaimer'
     | '/image-compressor'
+    | '/image-tools'
     | '/jpg-to-png'
     | '/mp3-cutter'
     | '/network-tools'
+    | '/pdf-tools'
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
+    | '/video-tools'
     | '/word-tools'
   fileRoutesById: FileRoutesById
 }
@@ -223,18 +271,22 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ToolIdRoute: typeof ToolIdRoute
   AboutRoute: typeof AboutRoute
+  AudioToolsRoute: typeof AudioToolsRoute
   ContactRoute: typeof ContactRoute
   CropImageRoute: typeof CropImageRoute
   DeveloperToolsRoute: typeof DeveloperToolsRoute
   DisclaimerRoute: typeof DisclaimerRoute
   ImageCompressorRoute: typeof ImageCompressorRoute
+  ImageToolsRoute: typeof ImageToolsRoute
   JpgToPngRoute: typeof JpgToPngRoute
   Mp3CutterRoute: typeof Mp3CutterRoute
   NetworkToolsRoute: typeof NetworkToolsRoute
+  PdfToolsRoute: typeof PdfToolsRoute
   PngToJpgRoute: typeof PngToJpgRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResizeImageRoute: typeof ResizeImageRoute
   TermsRoute: typeof TermsRoute
+  VideoToolsRoute: typeof VideoToolsRoute
   WordToolsRoute: typeof WordToolsRoute
 }
 
@@ -245,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/word-tools'
       fullPath: '/word-tools'
       preLoaderRoute: typeof WordToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/video-tools': {
+      id: '/video-tools'
+      path: '/video-tools'
+      fullPath: '/video-tools'
+      preLoaderRoute: typeof VideoToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -275,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PngToJpgRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pdf-tools': {
+      id: '/pdf-tools'
+      path: '/pdf-tools'
+      fullPath: '/pdf-tools'
+      preLoaderRoute: typeof PdfToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/network-tools': {
       id: '/network-tools'
       path: '/network-tools'
@@ -294,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/jpg-to-png'
       fullPath: '/jpg-to-png'
       preLoaderRoute: typeof JpgToPngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/image-tools': {
+      id: '/image-tools'
+      path: '/image-tools'
+      fullPath: '/image-tools'
+      preLoaderRoute: typeof ImageToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/image-compressor': {
@@ -331,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audio-tools': {
+      id: '/audio-tools'
+      path: '/audio-tools'
+      fullPath: '/audio-tools'
+      preLoaderRoute: typeof AudioToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -359,18 +439,22 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ToolIdRoute: ToolIdRoute,
   AboutRoute: AboutRoute,
+  AudioToolsRoute: AudioToolsRoute,
   ContactRoute: ContactRoute,
   CropImageRoute: CropImageRoute,
   DeveloperToolsRoute: DeveloperToolsRoute,
   DisclaimerRoute: DisclaimerRoute,
   ImageCompressorRoute: ImageCompressorRoute,
+  ImageToolsRoute: ImageToolsRoute,
   JpgToPngRoute: JpgToPngRoute,
   Mp3CutterRoute: Mp3CutterRoute,
   NetworkToolsRoute: NetworkToolsRoute,
+  PdfToolsRoute: PdfToolsRoute,
   PngToJpgRoute: PngToJpgRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResizeImageRoute: ResizeImageRoute,
   TermsRoute: TermsRoute,
+  VideoToolsRoute: VideoToolsRoute,
   WordToolsRoute: WordToolsRoute,
 }
 export const routeTree = rootRouteImport

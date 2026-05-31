@@ -1004,7 +1004,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     title: "IP Lookup",
     description: "Look up public IP location and network details.",
     seoTitle: "IP Lookup Online - Free Browser Network Tool",
-    metaDescription: "Look up public IP address details from your browser. No account or CreatorKitTools backend.",
+    metaDescription: "Look up public IP address details from your browser. Leave it blank to check your own IP. No account or CreatorKitTools backend.",
     category: "network",
     route: "/ip-lookup",
     accept: ".txt,text/plain",
@@ -1690,12 +1690,78 @@ async function getPublicIp() {
 }
 
 async function lookupIp(input: string) {
-  const ip = input.trim();
-  const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
-  if (!response.ok) throw new Error("IP lookup failed. Try again later.");
-  const data = await response.json() as Record<string, unknown>;
-  if (data.success === false) throw new Error(String(data.message ?? "IP lookup failed."));
-  return JSON.stringify(data, null, 2);
+  const query = input.trim();
+  const target = query ? encodeURIComponent(query) : "";
+  const sources = [
+    {
+      name: "ipwho.is",
+      url: target ? `https://ipwho.is/${target}` : "https://ipwho.is/",
+      parse: (data: Record<string, unknown>) => {
+        if (data.success === false) throw new Error(String(data.message ?? "IP lookup failed."));
+        return {
+          ip: data.ip,
+          type: data.type,
+          country: data.country,
+          region: data.region,
+          city: data.city,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          isp: data.connection && typeof data.connection === "object" ? (data.connection as Record<string, unknown>).isp : undefined,
+          org: data.connection && typeof data.connection === "object" ? (data.connection as Record<string, unknown>).org : undefined,
+          timezone: data.timezone && typeof data.timezone === "object" ? (data.timezone as Record<string, unknown>).id : undefined,
+          source: "ipwho.is",
+        };
+      },
+    },
+    {
+      name: "ipinfo.io",
+      url: target ? `https://ipinfo.io/${target}/json` : "https://ipinfo.io/json",
+      parse: (data: Record<string, unknown>) => {
+        if (data.error) throw new Error(String(data.error ?? "IP lookup failed."));
+        const [latitude, longitude] = typeof data.loc === "string" ? data.loc.split(",") : [];
+        return {
+          ip: data.ip,
+          type: typeof data.ip === "string" && data.ip.includes(":") ? "IPv6" : "IPv4",
+          country: data.country,
+          region: data.region,
+          city: data.city,
+          latitude,
+          longitude,
+          isp: data.org,
+          org: data.org,
+          timezone: data.timezone,
+          source: "ipinfo.io",
+        };
+      },
+    },
+    {
+      name: "country.is",
+      url: target ? `https://api.country.is/${target}` : "https://api.country.is/",
+      parse: (data: Record<string, unknown>) => {
+        if (!data.ip) throw new Error("IP lookup failed.");
+        return {
+          ip: data.ip,
+          type: typeof data.ip === "string" && data.ip.includes(":") ? "IPv6" : "IPv4",
+          country: data.country,
+          source: "country.is",
+        };
+      },
+    },
+  ];
+
+  const failures: string[] = [];
+  for (const source of sources) {
+    try {
+      const response = await fetchWithTimeout(source.url, 10_000);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = (await response.json()) as Record<string, unknown>;
+      return formatIpLookup(source.parse(data));
+    } catch (error) {
+      failures.push(`${source.name}: ${error instanceof Error ? error.message : "failed"}`);
+    }
+  }
+
+  throw new Error(`IP lookup could not be completed from this browser. Try again later or disable blockers for this page. ${failures.join(" | ")}`);
 }
 
 function userAgentDetails() {
@@ -1708,6 +1774,32 @@ function userAgentDetails() {
     `Cookies enabled: ${nav.cookieEnabled ? "Yes" : "No"}`,
     `Screen: ${screen.width}x${screen.height}`,
     `Viewport: ${innerWidth}x${innerHeight}`,
+  ].join("\n");
+}
+
+async function fetchWithTimeout(url: string, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal, cache: "no-store" });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function formatIpLookup(data: Record<string, unknown>) {
+  return [
+    `IP: ${data.ip ?? "Unavailable"}`,
+    `Type: ${data.type ?? "Unavailable"}`,
+    `Country: ${data.country ?? "Unavailable"}`,
+    `Region: ${data.region ?? "Unavailable"}`,
+    `City: ${data.city ?? "Unavailable"}`,
+    `Latitude: ${data.latitude ?? "Unavailable"}`,
+    `Longitude: ${data.longitude ?? "Unavailable"}`,
+    `ISP: ${data.isp ?? "Unavailable"}`,
+    `Organization: ${data.org ?? "Unavailable"}`,
+    `Timezone: ${data.timezone ?? "Unavailable"}`,
+    `Source: ${data.source ?? "Public browser lookup API"}`,
   ].join("\n");
 }
 
