@@ -13,6 +13,7 @@ import {
   downloadBlob,
   getTool,
   getToolPath,
+  isNoInputTool,
   isTextInputTool,
   processTool,
 } from "@/lib/client-tools";
@@ -71,6 +72,24 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
     setStage("");
     setWorking(false);
     setErrorMessage("");
+  };
+
+  const clearWorkspace = () => {
+    resetWorkspace();
+    setOptions({
+      width: 720,
+      height: 720,
+      quality: 82,
+      start: 0,
+      duration: 10,
+      end: 10,
+      speed: 1,
+      volume: 1.5,
+      blur: 6,
+      text: "",
+      bottomText: "",
+      watermark: "CreatorKitTools",
+    });
   };
 
   const handleFiles = (incoming: FileList | null) => {
@@ -150,7 +169,7 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
                   Tool categories
                 </h2>
                 <div className="grid gap-2">
-                {(["image", "pdf", "document", "audio", "video", "youtube", "social", "text"] as const).map((category) => (
+                {(["image", "pdf", "document", "word", "audio", "video", "youtube", "developer", "network"] as const).map((category) => (
                     <a
                       key={category}
                       href={`#${category}`}
@@ -208,10 +227,15 @@ export function ClientToolPage({ toolId = "image-compressor", homepage = false }
                       Your files are processed in your browser and never uploaded.
                     </p>
                   </div>
-                  <Button disabled={working || !canStartTool(tool.id, files, options)} onClick={run} className="bg-brand text-brand-foreground hover:bg-brand/90 min-w-32">
-                    {working ? <RotateCcw className="size-4 mr-2 animate-spin" /> : <Play className="size-4 mr-2" />}
-                    {working ? "Processing" : "Start"}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" disabled={working} onClick={clearWorkspace}>
+                      Clear
+                    </Button>
+                    <Button disabled={working || !canStartTool(tool.id, files, options)} onClick={run} className="bg-brand text-brand-foreground hover:bg-brand/90 min-w-32">
+                      {working ? <RotateCcw className="size-4 mr-2 animate-spin" /> : <Play className="size-4 mr-2" />}
+                      {working ? "Processing" : "Start"}
+                    </Button>
+                  </div>
                 </div>
                 {(working || progress > 0) && (
                   <div className="mt-5">
@@ -274,11 +298,12 @@ function TopBar() {
           <a href="#image" className="hover:text-foreground">Image</a>
           <a href="#pdf" className="hover:text-foreground">PDF</a>
           <a href="#document" className="hover:text-foreground">Document</a>
+          <a href="#word" className="hover:text-foreground">Word</a>
           <a href="#audio" className="hover:text-foreground">Audio</a>
           <a href="#video" className="hover:text-foreground">Video</a>
           <a href="#youtube" className="hover:text-foreground">YouTube</a>
-          <a href="#social" className="hover:text-foreground">Social</a>
-          <a href="#text" className="hover:text-foreground">Text</a>
+          <a href="#developer" className="hover:text-foreground">Developer</a>
+          <a href="#network" className="hover:text-foreground">Network</a>
         </div>
       </div>
     </nav>
@@ -358,6 +383,7 @@ function Controls({
   const needsSize = toolId.includes("resize") || toolId === "image-compressor";
   const needsSpeed = toolId.includes("speed");
   const needsVolume = toolId === "volume-booster";
+  const needsGenerator = toolId === "lorem-ipsum-generator" || toolId === "uuid-generator" || toolId === "password-generator";
   const needsText =
     isTextInputTool(toolId) ||
     toolId === "meme-maker" ||
@@ -370,7 +396,7 @@ function Controls({
   const needsPageRange = toolId === "split-pdf";
   const needsRotation = toolId === "rotate-pdf";
 
-  if (!needsTiming && !needsTimestamp && !needsSize && !needsSpeed && !needsVolume && !needsText && !needsBlur && !needsPageRange && !needsRotation) {
+  if (!needsTiming && !needsTimestamp && !needsSize && !needsSpeed && !needsVolume && !needsText && !needsBlur && !needsPageRange && !needsRotation && !needsGenerator) {
     return null;
   }
 
@@ -404,6 +430,24 @@ function Controls({
         {needsRotation && (
           <Field label="Rotation angle" value={options.rotation ?? 90} step={90} onChange={(value) => update({ rotation: value })} />
         )}
+        {needsGenerator && (
+          <Field
+            label={toolId === "password-generator" ? "Password length" : toolId === "uuid-generator" ? "How many UUIDs" : "Paragraphs"}
+            value={options.width ?? (toolId === "password-generator" ? 20 : 5)}
+            onChange={(value) => update({ width: value })}
+          />
+        )}
+        {(toolId === "regex-tester" || toolId === "text-diff-checker") && (
+          <label className="grid gap-2 md:col-span-2">
+            <span className="text-xs text-muted-foreground">{toolId === "regex-tester" ? "Regex pattern" : "Original text"}</span>
+            <textarea
+              className="min-h-24 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={options.text ?? ""}
+              onChange={(event) => update({ text: event.target.value })}
+              placeholder={toolId === "regex-tester" ? "Example: \\b\\w+@\\w+\\.com\\b" : "Paste original text here."}
+            />
+          </label>
+        )}
         {(toolId === "youtube-thumbnail-downloader" || toolId === "youtube-thumbnail-viewer") && (
           <label className="grid gap-2">
             <span className="text-xs text-muted-foreground">Thumbnail size</span>
@@ -417,22 +461,6 @@ function Controls({
               <option value="hqdefault">hqdefault</option>
               <option value="mqdefault">mqdefault</option>
               <option value="default">default</option>
-            </select>
-          </label>
-        )}
-        {toolId === "social-media-image-resizer" && (
-          <label className="grid gap-2">
-            <span className="text-xs text-muted-foreground">Export size</span>
-            <select
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={options.preset ?? "instagram-post"}
-              onChange={(event) => update({ preset: event.target.value })}
-            >
-              <option value="instagram-post">Instagram post 1080x1080</option>
-              <option value="instagram-story">Instagram story 1080x1920</option>
-              <option value="tiktok-cover">TikTok cover 1080x1920</option>
-              <option value="youtube-thumbnail">YouTube thumbnail 1280x720</option>
-              <option value="youtube-banner">YouTube banner 2560x1440</option>
             </select>
           </label>
         )}
@@ -498,12 +526,12 @@ function Controls({
         )}
         {isTextInputTool(toolId) && toolId !== "txt-to-pdf" && toolId !== "text-case-converter" && toolId !== "case-converter" && toolId !== "word-counter" && (
           <label className="grid gap-2 md:col-span-2">
-            <span className="text-xs text-muted-foreground">{toolId.includes("youtube") ? "YouTube URL, video ID, title, or description" : "Text content"}</span>
+            <span className="text-xs text-muted-foreground">{toolId.includes("youtube") ? "YouTube URL, video ID, title, or description" : toolId === "ip-lookup" ? "IP address" : toolId === "regex-tester" ? "Test text" : toolId === "text-diff-checker" ? "Changed text" : "Text content"}</span>
             <textarea
               className="min-h-36 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={options.bottomText ?? ""}
               onChange={(event) => update({ bottomText: event.target.value })}
-              placeholder={toolId.includes("youtube") ? "Paste a YouTube URL, video ID, or text here." : "Paste text here."}
+              placeholder={toolId.includes("youtube") ? "Paste a YouTube URL, video ID, or text here." : toolId === "ip-lookup" ? "Example: 8.8.8.8" : "Paste text here."}
             />
           </label>
         )}
@@ -635,7 +663,7 @@ function VideoWarning() {
 function ToolDirectory({ selectedTool }: { selectedTool: ClientToolId; onSelect: (tool: ClientToolId) => void }) {
   return (
     <section className="mt-14 space-y-8">
-                {(["image", "pdf", "document", "audio", "video", "youtube", "social", "text"] as const).map((category) => (
+                {(["image", "pdf", "document", "word", "audio", "video", "youtube", "developer", "network"] as const).map((category) => (
         <div key={category} id={category}>
           <h2 className="text-xl font-semibold capitalize mb-4">
             {`${category} tools`}
@@ -684,11 +712,13 @@ function HowToUse({ toolTitle }: { toolTitle: string }) {
 }
 
 function allowsTextOnly(toolId: ClientToolId) {
-  return isTextInputTool(toolId);
+  return isTextInputTool(toolId) || isNoInputTool(toolId);
 }
 
 function canStartTool(toolId: ClientToolId, files: File[], options: ProcessOptions) {
+  if (toolId === "document-compare") return files.length >= 2;
   if (!allowsTextOnly(toolId)) return files.length > 0;
+  if (isNoInputTool(toolId)) return true;
   return files.length > 0 || textOnlyValue(toolId, options).length > 0;
 }
 

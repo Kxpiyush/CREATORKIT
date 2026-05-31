@@ -9,10 +9,10 @@ import {
   Layers,
   Lock,
   Menu,
+  Search,
   Scissors,
   ShieldCheck,
   Sparkles,
-  Hash,
   Youtube,
   X,
   Zap,
@@ -65,17 +65,24 @@ const POPULAR_TOOLS: ClientToolId[] = [
   "txt-to-pdf",
   "docx-to-text",
   "docx-to-html",
+  "word-to-txt",
+  "txt-to-word",
+  "word-to-html",
+  "word-to-markdown",
+  "word-image-extractor",
+  "document-compare",
   "text-case-converter",
   "word-counter",
   "youtube-thumbnail-downloader",
   "youtube-video-id-extractor",
-  "instagram-caption-formatter",
-  "instagram-hashtag-generator",
-  "social-media-image-resizer",
   "character-counter",
   "case-converter",
+  "json-formatter-validator",
+  "jwt-decoder",
+  "password-generator",
+  "hash-generator",
+  "what-is-my-ip",
   "remove-duplicate-lines",
-  "url-encoder",
   "mp3-cutter",
   "video-to-mp3",
   "mute-video",
@@ -89,22 +96,24 @@ const CATEGORY_SECTIONS: Array<{ id: ToolCategory; title: string; text: string }
   { id: "image", title: "Image Tools", text: "Fast Canvas-powered tools for everyday image edits." },
   { id: "pdf", title: "PDF Tools", text: "Real PDF utilities powered by pdf-lib, pdf.js, and jsPDF in the browser." },
   { id: "document", title: "Document Tools", text: "Real text and DOCX utilities powered by Mammoth and browser text processing." },
+  { id: "word", title: "Word Tools", text: "Client-side DOCX conversion, extraction, metadata, image, and compare tools." },
   { id: "audio", title: "Audio Tools", text: "Private audio trimming and editing with Web Audio where possible." },
   { id: "video", title: "Video Tools", text: "Browser-based video conversion and editing powered by ffmpeg.wasm only when you use a video tool." },
   { id: "youtube", title: "YouTube Tools", text: "Public thumbnail, ID, title, and description helpers with no video downloading." },
-  { id: "social", title: "Social Media Tools", text: "Caption, hashtag, and image resizing tools that run locally in your browser." },
-  { id: "text", title: "Text Tools", text: "Fast text counters, converters, encoders, decoders, and line utilities." },
+  { id: "developer", title: "Developer Tools", text: "Format, encode, decode, validate, generate, and compare developer text locally." },
+  { id: "network", title: "Network Tools", text: "Browser-based IP and user agent helpers with no CreatorKitTools backend." },
 ];
 
 const NAV_ITEMS = [
   { href: "#image-tools", label: "Image Tools" },
   { href: "#pdf-tools", label: "PDF Tools" },
   { href: "#document-tools", label: "Document Tools" },
+  { href: "#word-tools", label: "Word Tools" },
   { href: "#audio-tools", label: "Audio Tools" },
   { href: "#video-tools", label: "Video Tools" },
   { href: "#youtube-tools", label: "YouTube Tools" },
-  { href: "#social-tools", label: "Social Tools" },
-  { href: "#text-tools", label: "Text Tools" },
+  { href: "#developer-tools", label: "Developer Tools" },
+  { href: "#network-tools", label: "Network Tools" },
 ];
 
 const iconByTool: Partial<Record<ClientToolId, typeof ImageIcon>> = {
@@ -125,6 +134,18 @@ const iconByTool: Partial<Record<ClientToolId, typeof ImageIcon>> = {
   "txt-to-pdf": FileText,
   "docx-to-text": FileText,
   "docx-to-html": FileText,
+  "word-to-txt": FileText,
+  "txt-to-word": FileText,
+  "word-to-html": FileText,
+  "html-to-word": FileText,
+  "word-to-markdown": FileText,
+  "markdown-to-word": FileText,
+  "word-word-counter": FileText,
+  "word-character-counter": FileText,
+  "word-metadata-viewer": FileText,
+  "word-text-extractor": FileText,
+  "word-image-extractor": FileImage,
+  "document-compare": FileText,
   "text-case-converter": FileText,
   "word-counter": FileText,
   "youtube-thumbnail-downloader": Youtube,
@@ -132,20 +153,31 @@ const iconByTool: Partial<Record<ClientToolId, typeof ImageIcon>> = {
   "youtube-video-id-extractor": Youtube,
   "youtube-title-length-checker": Youtube,
   "youtube-description-length-checker": Youtube,
-  "instagram-caption-formatter": Hash,
-  "instagram-hashtag-generator": Hash,
-  "tiktok-hashtag-generator": Hash,
-  "tiktok-caption-formatter": Hash,
-  "social-media-image-resizer": ImageIcon,
   "character-counter": FileText,
   "case-converter": FileText,
   "remove-duplicate-lines": FileText,
   "text-sorter": FileText,
-  "text-reverser": FileText,
-  "url-encoder": FileText,
-  "url-decoder": FileText,
   "base64-encoder": FileText,
   "base64-decoder": FileText,
+  "url-encoder": FileText,
+  "url-decoder": FileText,
+  "html-encoder": FileText,
+  "html-decoder": FileText,
+  "jwt-decoder": FileText,
+  "json-formatter-validator": FileText,
+  "xml-formatter": FileText,
+  "yaml-to-json": FileText,
+  "json-to-yaml": FileText,
+  "regex-tester": FileText,
+  "text-diff-checker": FileText,
+  "lorem-ipsum-generator": FileText,
+  "uuid-generator": FileText,
+  "password-generator": FileText,
+  "password-strength-checker": FileText,
+  "hash-generator": FileText,
+  "what-is-my-ip": FileText,
+  "ip-lookup": FileText,
+  "user-agent-detector": FileText,
   "video-to-mp3": FileVideo,
   "mute-video": FileVideo,
   "video-trimmer": Scissors,
@@ -158,15 +190,22 @@ const colorByCategory: Record<ToolCategory, string> = {
   image: "bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-400/10 dark:text-sky-200 dark:border-sky-400/20",
   pdf: "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-400/10 dark:text-rose-200 dark:border-rose-400/20",
   document: "bg-violet-50 text-violet-700 border-violet-100 dark:bg-violet-400/10 dark:text-violet-200 dark:border-violet-400/20",
+  word: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-400/10 dark:text-blue-200 dark:border-blue-400/20",
   audio: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-200 dark:border-emerald-400/20",
   video: "bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-400/10 dark:text-orange-200 dark:border-orange-400/20",
   youtube: "bg-red-50 text-red-700 border-red-100 dark:bg-red-400/10 dark:text-red-200 dark:border-red-400/20",
-  social: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100 dark:bg-fuchsia-400/10 dark:text-fuchsia-200 dark:border-fuchsia-400/20",
   text: "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-400/10 dark:text-slate-200 dark:border-slate-400/20",
+  developer: "bg-cyan-50 text-cyan-700 border-cyan-100 dark:bg-cyan-400/10 dark:text-cyan-200 dark:border-cyan-400/20",
+  network: "bg-lime-50 text-lime-700 border-lime-100 dark:bg-lime-400/10 dark:text-lime-200 dark:border-lime-400/20",
 };
 
 function Index() {
   const popular = POPULAR_TOOLS.map(getTool);
+  const [query, setQuery] = useState("");
+  const searchResults = TOOL_DEFINITIONS.filter((tool) => {
+    const haystack = `${tool.title} ${tool.description} ${tool.category}`.toLowerCase();
+    return query.trim().length > 0 && haystack.includes(query.toLowerCase());
+  }).slice(0, 12);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -212,6 +251,24 @@ function Index() {
           <AdSlot label="Advertisement" />
 
           <section className="mt-12">
+            <div className="mb-8 rounded-2xl border border-border bg-card p-4 shadow-sm">
+              <label className="relative block">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search tools..."
+                  className="h-12 w-full rounded-xl border border-input bg-background pl-11 pr-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              {searchResults.length > 0 && (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {searchResults.map((tool) => (
+                    <ToolCard key={tool.id} id={tool.id} compact />
+                  ))}
+                </div>
+              )}
+            </div>
             <SectionHeader title="Popular Tools" text="The most useful CreatorKitTools utilities, all working directly in your browser." />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {popular.map((tool) => (
@@ -355,11 +412,13 @@ function ToolCard({ id, compact = false }: { id: ClientToolId; compact?: boolean
 function categoryIcon(category: ToolCategory) {
   if (category === "pdf") return FileText;
   if (category === "document") return FileText;
+  if (category === "word") return FileText;
   if (category === "audio") return FileAudio;
   if (category === "video") return FileVideo;
   if (category === "youtube") return Youtube;
-  if (category === "social") return Hash;
   if (category === "text") return FileText;
+  if (category === "developer") return FileText;
+  if (category === "network") return FileText;
   return FileImage;
 }
 

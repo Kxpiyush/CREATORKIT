@@ -9,20 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WordToolsRouteImport } from './routes/word-tools'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResizeImageRouteImport } from './routes/resize-image'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PngToJpgRouteImport } from './routes/png-to-jpg'
+import { Route as NetworkToolsRouteImport } from './routes/network-tools'
 import { Route as Mp3CutterRouteImport } from './routes/mp3-cutter'
 import { Route as JpgToPngRouteImport } from './routes/jpg-to-png'
 import { Route as ImageCompressorRouteImport } from './routes/image-compressor'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as DeveloperToolsRouteImport } from './routes/developer-tools'
 import { Route as CropImageRouteImport } from './routes/crop-image'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ToolIdRouteImport } from './routes/$toolId'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WordToolsRoute = WordToolsRouteImport.update({
+  id: '/word-tools',
+  path: '/word-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -43,6 +51,11 @@ const PngToJpgRoute = PngToJpgRouteImport.update({
   path: '/png-to-jpg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NetworkToolsRoute = NetworkToolsRouteImport.update({
+  id: '/network-tools',
+  path: '/network-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Mp3CutterRoute = Mp3CutterRouteImport.update({
   id: '/mp3-cutter',
   path: '/mp3-cutter',
@@ -61,6 +74,11 @@ const ImageCompressorRoute = ImageCompressorRouteImport.update({
 const DisclaimerRoute = DisclaimerRouteImport.update({
   id: '/disclaimer',
   path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeveloperToolsRoute = DeveloperToolsRouteImport.update({
+  id: '/developer-tools',
+  path: '/developer-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CropImageRoute = CropImageRouteImport.update({
@@ -95,14 +113,17 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
+  '/developer-tools': typeof DeveloperToolsRoute
   '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
+  '/network-tools': typeof NetworkToolsRoute
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
+  '/word-tools': typeof WordToolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,14 +131,17 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
+  '/developer-tools': typeof DeveloperToolsRoute
   '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
+  '/network-tools': typeof NetworkToolsRoute
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
+  '/word-tools': typeof WordToolsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -126,14 +150,17 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/crop-image': typeof CropImageRoute
+  '/developer-tools': typeof DeveloperToolsRoute
   '/disclaimer': typeof DisclaimerRoute
   '/image-compressor': typeof ImageCompressorRoute
   '/jpg-to-png': typeof JpgToPngRoute
   '/mp3-cutter': typeof Mp3CutterRoute
+  '/network-tools': typeof NetworkToolsRoute
   '/png-to-jpg': typeof PngToJpgRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/resize-image': typeof ResizeImageRoute
   '/terms': typeof TermsRoute
+  '/word-tools': typeof WordToolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,14 +170,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/crop-image'
+    | '/developer-tools'
     | '/disclaimer'
     | '/image-compressor'
     | '/jpg-to-png'
     | '/mp3-cutter'
+    | '/network-tools'
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
+    | '/word-tools'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -158,14 +188,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/crop-image'
+    | '/developer-tools'
     | '/disclaimer'
     | '/image-compressor'
     | '/jpg-to-png'
     | '/mp3-cutter'
+    | '/network-tools'
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
+    | '/word-tools'
   id:
     | '__root__'
     | '/'
@@ -173,14 +206,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/crop-image'
+    | '/developer-tools'
     | '/disclaimer'
     | '/image-compressor'
     | '/jpg-to-png'
     | '/mp3-cutter'
+    | '/network-tools'
     | '/png-to-jpg'
     | '/privacy-policy'
     | '/resize-image'
     | '/terms'
+    | '/word-tools'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -189,18 +225,28 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
   CropImageRoute: typeof CropImageRoute
+  DeveloperToolsRoute: typeof DeveloperToolsRoute
   DisclaimerRoute: typeof DisclaimerRoute
   ImageCompressorRoute: typeof ImageCompressorRoute
   JpgToPngRoute: typeof JpgToPngRoute
   Mp3CutterRoute: typeof Mp3CutterRoute
+  NetworkToolsRoute: typeof NetworkToolsRoute
   PngToJpgRoute: typeof PngToJpgRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ResizeImageRoute: typeof ResizeImageRoute
   TermsRoute: typeof TermsRoute
+  WordToolsRoute: typeof WordToolsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/word-tools': {
+      id: '/word-tools'
+      path: '/word-tools'
+      fullPath: '/word-tools'
+      preLoaderRoute: typeof WordToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -229,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PngToJpgRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/network-tools': {
+      id: '/network-tools'
+      path: '/network-tools'
+      fullPath: '/network-tools'
+      preLoaderRoute: typeof NetworkToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mp3-cutter': {
       id: '/mp3-cutter'
       path: '/mp3-cutter'
@@ -255,6 +308,13 @@ declare module '@tanstack/react-router' {
       path: '/disclaimer'
       fullPath: '/disclaimer'
       preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developer-tools': {
+      id: '/developer-tools'
+      path: '/developer-tools'
+      fullPath: '/developer-tools'
+      preLoaderRoute: typeof DeveloperToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/crop-image': {
@@ -301,14 +361,17 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
   CropImageRoute: CropImageRoute,
+  DeveloperToolsRoute: DeveloperToolsRoute,
   DisclaimerRoute: DisclaimerRoute,
   ImageCompressorRoute: ImageCompressorRoute,
   JpgToPngRoute: JpgToPngRoute,
   Mp3CutterRoute: Mp3CutterRoute,
+  NetworkToolsRoute: NetworkToolsRoute,
   PngToJpgRoute: PngToJpgRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ResizeImageRoute: ResizeImageRoute,
   TermsRoute: TermsRoute,
+  WordToolsRoute: WordToolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
