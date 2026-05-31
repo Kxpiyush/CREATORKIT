@@ -89,7 +89,7 @@ export function SiteFooter() {
         <div className="grid gap-8 lg:grid-cols-[1.2fr_2fr]">
           <div>
             <Link to="/" className="flex items-center gap-3">
-              <img src="/favicon-48x48.png" alt="" className="size-9 rounded-xl" />
+              <img src="/brand-butterfly.svg" alt="" className="size-9 transition-transform duration-300 hover:scale-105" />
               <span className="text-base font-bold tracking-tight">CreatorKitTools</span>
             </Link>
             <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">

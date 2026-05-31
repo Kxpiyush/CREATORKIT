@@ -292,7 +292,7 @@ function TopBar() {
     <nav className="border-b border-border/60 bg-card/90 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src="/favicon-48x48.png" alt="" className="size-8 rounded-lg" />
+          <img src="/brand-butterfly.svg" alt="" className="size-8 transition-transform duration-300 hover:scale-105" />
           <span className="text-sm font-bold tracking-tight">CreatorKitTools</span>
         </Link>
         <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">

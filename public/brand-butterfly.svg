@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">CreatorKitTools butterfly icon</title>
+  <desc id="desc">A minimalist symmetrical butterfly with a smooth rainbow gradient.</desc>
+  <defs>
+    <linearGradient id="wingGradient" x1="64" y1="128" x2="448" y2="384" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff1744"/>
+      <stop offset="0.22" stop-color="#ffb300"/>
+      <stop offset="0.42" stop-color="#7ee000"/>
+      <stop offset="0.62" stop-color="#00d4ff"/>
+      <stop offset="0.82" stop-color="#3157ff"/>
+      <stop offset="1" stop-color="#8b2cff"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#wingGradient)" d="M249 251C170 250 106 208 88 115c93-17 157 21 169 118 2 10-1 18-8 18Z"/>
+  <path fill="url(#wingGradient)" d="M263 251c79-1 143-43 161-136-93-17-157 21-169 118-2 10 1 18 8 18Z"/>
+  <path fill="url(#wingGradient)" d="M243 266c-61 16-105 57-116 127 73 13 121-18 134-91 2-18-4-33-18-36Z"/>
+  <path fill="url(#wingGradient)" d="M269 266c61 16 105 57 116 127-73 13-121-18-134-91-2-18 4-33 18-36Z"/>
+  <path fill="#0b0f19" d="M256 207c23 23 35 54 35 91 0 52-21 87-35 107-14-20-35-55-35-107 0-37 12-68 35-91Z"/>
+  <path fill="#0b0f19" d="M246 194c0-20 4-38 10-53 6 15 10 33 10 53 0 9-4 16-10 16s-10-7-10-16Z"/>
+</svg>

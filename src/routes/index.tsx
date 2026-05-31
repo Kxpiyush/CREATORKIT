@@ -152,7 +152,7 @@ function Index() {
       <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/favicon-48x48.png" alt="" className="size-9 rounded-xl" />
+            <img src="/brand-butterfly.svg" alt="" className="size-9 transition-transform duration-300 hover:scale-105" />
             <span className="text-base font-bold tracking-tight">CreatorKitTools</span>
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-medium text-muted-foreground lg:flex">
